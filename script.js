@@ -2037,6 +2037,14 @@ function toggleMenu() {
 
 }
 
+function toggleMenu() {
+  // Mencari elemen menu navigasi (bisa berupa .nav-links atau nav)
+  const navLinks = document.querySelector(".nav-links") || document.querySelector("nav");
+  if (navLinks) {
+    navLinks.classList.toggle("mobile-open");
+  }
+}
+
 
 // ======================================================
 // DOM READY
