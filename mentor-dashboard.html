@@ -81,8 +81,7 @@
                 <div class="dashboard-icon">🎯</div>
                 <h3>Kompetensi</h3>
                 <p>Tampilkan keahlian dan bidang yang kamu kuasai.</p>
-                <button class="btn btn-ghost"
-                    onclick="showNotification('Fitur pengeditan kompetensi akan tersedia.', 'warning')">
+                <button class="btn btn-primary" onclick="openSkillsModal()">
                     Kelola Kompetensi
                 </button>
             </div>
@@ -91,18 +90,17 @@
             <div class="dashboard-card">
                 <div class="dashboard-icon">📁</div>
                 <h3>Portofolio</h3>
-                <p>Tampilkan pengalaman dan hasil pekerjaan terbaikmu.</p>
-                <button class="btn btn-ghost"
-                    onclick="showNotification('Fitur portofolio akan tersedia.', 'warning')">
+                <p>Tampilkan pengalaman, hasil pekerjaan, dan CV Anda.</p>
+                <button class="btn btn-primary" onclick="openPortfolioModal()">
                     Kelola Portofolio
                 </button>
             </div>
 
-            <!-- Card 4: EDIT PROFIL (BARU) -->
+            <!-- Card 4: Edit Profil -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">✏️</div>
                 <h3>Edit Profil & Kontak</h3>
-                <p>Lengkapi CV, keahlian, pengalaman, dan kontak WhatsApp kamu agar muncul di Cari Pemateri.</p>
+                <p>Lengkapi data profil dan kontak WhatsApp kamu.</p>
                 <button class="btn btn-primary" onclick="openEditProfileModal()">
                     Edit Profil
                 </button>
@@ -202,6 +200,103 @@
 
         <button class="btn btn-primary full" onclick="saveMentorProfile()">
             Simpan Profil
+        </button>
+    </div>
+</div>
+
+<!-- =====================================================
+     MODAL: KELOLA KOMPETENSI
+     ===================================================== -->
+<div class="modal" id="skillsModal">
+    <div class="modal-box profile-modal">
+        <button class="modal-close" onclick="closeModal('skillsModal')">✕</button>
+
+        <span class="eyebrow">KELOLA KOMPETENSI</span>
+        <h2>Keahlian Anda</h2>
+        <p class="muted" style="margin-bottom: 20px;">
+            Masukkan keahlian Anda, pisahkan dengan koma.
+            Contoh: JavaScript, React, Node.js
+        </p>
+
+        <div class="form-group">
+            <label for="skillsInput">Keahlian</label>
+            <input 
+                type="text" 
+                id="skillsInput" 
+                class="input" 
+                placeholder="JavaScript, React, Node.js"
+            >
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">
+                Pisahkan dengan koma (,)
+            </small>
+        </div>
+
+        <div id="skillsPreview" style="margin-top: 12px;"></div>
+
+        <button class="btn btn-primary full" onclick="saveSkills()" style="margin-top: 20px;">
+            Simpan Kompetensi
+        </button>
+    </div>
+</div>
+
+<!-- =====================================================
+     MODAL: KELOLA PORTOFOLIO
+     ===================================================== -->
+<div class="modal" id="portfolioModal">
+    <div class="modal-box profile-modal">
+        <button class="modal-close" onclick="closeModal('portfolioModal')">✕</button>
+
+        <span class="eyebrow">KELOLA PORTOFOLIO</span>
+        <h2>Portofolio & CV Anda</h2>
+        <p class="muted" style="margin-bottom: 20px;">
+            Upload foto portofolio dan CV Anda. Data akan tampil di halaman Cari Pemateri.
+        </p>
+
+        <!-- Upload Foto -->
+        <div class="form-group">
+            <label for="portfolioPhoto">Foto Portofolio</label>
+            <input 
+                type="file" 
+                id="portfolioPhoto" 
+                class="input" 
+                accept="image/*"
+                onchange="previewPhoto(event)"
+            >
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">
+                Format: JPG/PNG, maks 500KB.
+            </small>
+            <div id="photoPreview" style="margin-top: 12px;"></div>
+        </div>
+
+        <!-- Upload CV -->
+        <div class="form-group">
+            <label for="portfolioCV">File CV (PDF)</label>
+            <input 
+                type="file" 
+                id="portfolioCV" 
+                class="input" 
+                accept="application/pdf"
+                onchange="previewCV(event)"
+            >
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">
+                Format: PDF, maks 1MB.
+            </small>
+            <div id="cvPreview" style="margin-top: 12px;"></div>
+        </div>
+
+        <!-- Deskripsi Portofolio -->
+        <div class="form-group">
+            <label for="portfolioDesc">Deskripsi Portofolio</label>
+            <textarea 
+                id="portfolioDesc" 
+                class="input" 
+                rows="3" 
+                placeholder="Ceritakan portofolio atau proyek terbaik Anda..."
+            ></textarea>
+        </div>
+
+        <button class="btn btn-primary full" onclick="savePortfolio()" style="margin-top: 20px;">
+            Simpan Portofolio
         </button>
     </div>
 </div>

@@ -575,7 +575,6 @@ function renderMentors() {
 
     grid.innerHTML = "";
 
-    // Filter: hanya tampilkan pemateri yang punya phone (artinya sudah lengkapi profil)
     const validMentors = current.filter(mentor => {
         if (mentor.userId === null || mentor.userId === undefined) return true;
         return mentor.phone && mentor.phone.length >= 10 && mentor.role !== "Pemateri Baru";
@@ -640,7 +639,6 @@ function showProfile(index) {
     const profileContent = document.getElementById("profileContent");
     if (!profileContent) return;
 
-    // Format nomor WA
     let waNumber = mentor.phone ? mentor.phone.replace(/\D/g, "") : "";
     if (waNumber.startsWith("0")) {
         waNumber = "62" + waNumber.substring(1);
@@ -670,9 +668,23 @@ function showProfile(index) {
         </div>
         <div class="detail-label">PENGALAMAN</div>
         <p class="muted">${mentor.exp} tahun pengalaman profesional.</p>
+
+        ${mentor.photo ? `
+            <div class="detail-label">FOTO PORTOFOLIO</div>
+            <img src="${mentor.photo}" alt="Portofolio ${mentor.name}" 
+                 style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-top: 8px;">
+        ` : ""}
+
         <div class="portfolio">
             <h4>Portofolio</h4>
             <p>${mentor.portfolio}</p>
+            ${mentor.cv ? `
+                <a href="${mentor.cv}" download="CV-${mentor.name}.pdf" 
+                   class="btn btn-ghost" 
+                   style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;">
+                    📄 Download CV
+                </a>
+            ` : ""}
         </div>
 
         <div class="contact-section">
@@ -864,6 +876,8 @@ function saveMentorProfile() {
         desc: description,
         portfolio: portfolio || "Portofolio belum diisi.",
         phone: phone,
+        photo: mentorIndex !== -1 ? mentors[mentorIndex].photo : null,
+        cv: mentorIndex !== -1 ? mentors[mentorIndex].cv : null,
         userId: user.id
     };
 
@@ -885,31 +899,295 @@ function saveMentorProfile() {
 }
 
 // =====================================================
+// FUNGSI KELOLA KOMPETENSI
+// =====================================================
+function openSkillsModal() {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
+        return;
+    }
+
+    const mentors = getSavedMentors();
+    const mentor = mentors.find(m => m.userId === user.id);
+
+    const skillsInput = document.getElementById("skillsInput");
+
+    if (mentor && mentor.skills && mentor.skills.length > 0) {
+        skillsInput.value = mentor.skills.join(", ");
+    } else {
+        skillsInput.value = "";
+    }
+
+    renderSkillsPreview();
+    openModal("skillsModal");
+}
+
+function renderSkillsPreview() {
+    const input = document.getElementById("skillsInput");
+    const preview = document.getElementById("skillsPreview");
+    if (!input || !preview) return;
+
+    const skills = input.value
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    if (skills.length === 0) {
+        preview.innerHTML = `<p class="muted" style="font-size: 11px;">Belum ada keahlian.</p>`;
+        return;
+    }
+
+    preview.innerHTML = `
+        <div class="detail-label" style="margin-top: 10px;">PREVIEW</div>
+        <div class="detail-list">
+            ${skills.map(s => `<span>${s}</span>`).join("")}
+        </div>
+    `;
+}
+
+document.addEventListener("input", function (e) {
+    if (e.target && e.target.id === "skillsInput") {
+        renderSkillsPreview();
+    }
+});
+
+function saveSkills() {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
+        return;
+    }
+
+    const input = document.getElementById("skillsInput");
+    const skillsStr = input ? input.value.trim() : "";
+
+    if (!skillsStr) {
+        showNotification("Minimal isi 1 keahlian.", "warning");
+        return;
+    }
+
+    const skills = skillsStr
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    const mentors = getSavedMentors();
+    const mentorIndex = mentors.findIndex(m => m.userId === user.id);
+
+    if (mentorIndex === -1) {
+        mentors.push({
+            id: "mentor-" + Date.now(),
+            name: user.name,
+            initials: getInitials(user.name),
+            role: "Pemateri Baru",
+            location: "Indonesia",
+            city: "Indonesia",
+            category: "Umum",
+            exp: 1,
+            rating: 5,
+            skills: skills,
+            desc: "Profil pemateri terdaftar.",
+            portfolio: "Portofolio belum diisi.",
+            phone: "",
+            userId: user.id
+        });
+    } else {
+        mentors[mentorIndex].skills = skills;
+    }
+
+    saveMentors(mentors);
+
+    showNotification("Kompetensi berhasil disimpan!", "success");
+
+    setTimeout(() => {
+        closeModal("skillsModal");
+    }, 1000);
+}
+
+// =====================================================
+// FUNGSI KELOLA PORTOFOLIO
+// =====================================================
+function openPortfolioModal() {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
+        return;
+    }
+
+    const mentors = getSavedMentors();
+    const mentor = mentors.find(m => m.userId === user.id);
+
+    const portfolioDesc = document.getElementById("portfolioDesc");
+    const photoPreview = document.getElementById("photoPreview");
+    const cvPreview = document.getElementById("cvPreview");
+
+    if (photoPreview) photoPreview.innerHTML = "";
+    if (cvPreview) cvPreview.innerHTML = "";
+
+    if (mentor) {
+        if (portfolioDesc) {
+            portfolioDesc.value = mentor.portfolio && mentor.portfolio !== "Portofolio belum diisi."
+                ? mentor.portfolio
+                : "";
+        }
+
+        if (mentor.photo && photoPreview) {
+            photoPreview.innerHTML = `
+                <img src="${mentor.photo}" alt="Foto Portofolio" 
+                     style="max-width: 100%; border-radius: 10px; border: 1px solid var(--line);">
+            `;
+        }
+
+        if (mentor.cv && cvPreview) {
+            cvPreview.innerHTML = `
+                <div style="padding: 10px; background: #f5f5fa; border-radius: 8px; font-size: 12px;">
+                    📄 CV sudah diupload. 
+                    <a href="${mentor.cv}" download="CV-${mentor.name}.pdf" 
+                       style="color: var(--primary); font-weight: 600;">
+                        Download
+                    </a>
+                </div>
+            `;
+        }
+    }
+
+    openModal("portfolioModal");
+}
+
+function previewPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 500 * 1024) {
+        showNotification("Ukuran foto maksimal 500KB.", "warning");
+        event.target.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById("photoPreview");
+        if (preview) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Preview Foto" 
+                     style="max-width: 100%; border-radius: 10px; border: 1px solid var(--line);">
+            `;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function previewCV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) {
+        showNotification("Ukuran CV maksimal 1MB.", "warning");
+        event.target.value = "";
+        return;
+    }
+
+    const preview = document.getElementById("cvPreview");
+    if (preview) {
+        preview.innerHTML = `
+            <div style="padding: 10px; background: #f5f5fa; border-radius: 8px; font-size: 12px;">
+                📄 File siap diupload: <strong>${file.name}</strong>
+            </div>
+        `;
+    }
+}
+
+function savePortfolio() {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
+        return;
+    }
+
+    const photoInput = document.getElementById("portfolioPhoto");
+    const cvInput = document.getElementById("portfolioCV");
+    const descInput = document.getElementById("portfolioDesc");
+
+    const photoFile = photoInput && photoInput.files[0];
+    const cvFile = cvInput && cvInput.files[0];
+    const desc = descInput ? descInput.value.trim() : "";
+
+    const mentors = getSavedMentors();
+    const mentorIndex = mentors.findIndex(m => m.userId === user.id);
+
+    if (mentorIndex === -1) {
+        showNotification("Silakan isi profil terlebih dahulu.", "warning");
+        return;
+    }
+
+    const mentor = mentors[mentorIndex];
+
+    function finishSave(photoData, cvData) {
+        if (photoData) mentor.photo = photoData;
+        if (cvData) mentor.cv = cvData;
+        if (desc) mentor.portfolio = desc;
+
+        saveMentors(mentors);
+
+        showNotification("Portofolio berhasil disimpan!", "success");
+
+        setTimeout(() => {
+            closeModal("portfolioModal");
+        }, 1000);
+    }
+
+    if (photoFile && cvFile) {
+        const photoReader = new FileReader();
+        const cvReader = new FileReader();
+        let photoData = null;
+        let cvData = null;
+
+        photoReader.onload = function (e) {
+            photoData = e.target.result;
+            cvReader.readAsDataURL(cvFile);
+        };
+
+        cvReader.onload = function (e) {
+            cvData = e.target.result;
+            finishSave(photoData, cvData);
+        };
+
+        photoReader.readAsDataURL(photoFile);
+    } else if (photoFile) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            finishSave(e.target.result, null);
+        };
+        reader.readAsDataURL(photoFile);
+    } else if (cvFile) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            finishSave(null, e.target.result);
+        };
+        reader.readAsDataURL(cvFile);
+    } else {
+        finishSave(null, null);
+    }
+}
+
+// =====================================================
 // DOMCONTENTLOADED
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Proteksi halaman
     protectPages();
-
-    // Update navbar
     updateNavbar();
 
-    // ==========================================
-    // Khusus halaman mentor-dashboard.html
-    // ==========================================
     if (document.getElementById("mentorName")) {
         const user = getCurrentUser();
         if (user) {
-            // Isi nama pemateri
             document.getElementById("mentorName").textContent = user.name;
 
-            // Cek apakah profil sudah lengkap
             const mentors = getSavedMentors();
             const mentor = mentors.find(m => m.userId === user.id);
 
             const profileAlert = document.getElementById("profileAlert");
             if (profileAlert) {
-                // Tampilkan alert jika belum ada data mentor atau phone kosong
                 if (!mentor || !mentor.phone || mentor.role === "Pemateri Baru") {
                     profileAlert.style.display = "block";
                 } else {
@@ -919,9 +1197,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ==========================================
-    // Khusus halaman search.html
-    // ==========================================
     if (document.getElementById("mentorGrid")) {
         const user = getCurrentUser();
         if (!user || (user.role !== "mentor" && user.isMentor !== true)) {
@@ -950,7 +1225,6 @@ function showMentorProfile() {
     showNotification(`Profil ${mentor.name} aktif sebagai pemateri.`, "success");
 }
 
-// Tutup modal saat klik di luar
 window.addEventListener("click", event => {
     if (event.target.classList.contains("modal")) {
         closeModal(event.target.id);

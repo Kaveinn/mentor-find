@@ -1637,3 +1637,47 @@ body.auth-page {
     max-width: none;
   }
 }
+
+/* Preview Foto & CV */
+#photoPreview img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    margin-top: 8px;
+}
+
+#cvPreview div {
+    padding: 10px;
+    background: #f5f5fa;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+input[type="file"].input {
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+input[type="file"].input::-webkit-file-upload-button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+    margin-right: 10px;
+}
+
+/* Card Dashboard */
+.dashboard-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-card .btn {
+    margin-top: auto;
+}
