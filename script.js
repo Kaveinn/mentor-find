@@ -175,7 +175,7 @@ function showNotification(message, type = "success") {
 }
 
 // =====================================================
-// FUNGSI UPDATE NAVBAR (INI YANG PENTING)
+// FUNGSI UPDATE NAVBAR
 // =====================================================
 function updateNavbar() {
     const navLinks = document.getElementById("mainNavLinks");
@@ -188,9 +188,7 @@ function updateNavbar() {
 
     const user = getCurrentUser();
 
-    // ====================
     // KONDISI 1: BELUM LOGIN
-    // ====================
     if (!user) {
         navLinks.innerHTML = `
             <a href="index.html" class="active">Beranda</a>
@@ -207,11 +205,8 @@ function updateNavbar() {
         return;
     }
 
-    // ====================
     // KONDISI 2: LOGIN SEBAGAI PEMATERI / MENTOR
-    // ====================
     if (user.role === "mentor" || user.isMentor === true) {
-        // Menu Tengah: Dashboard Pemateri disisipkan SETELAH Beranda
         navLinks.innerHTML = `
             <a href="index.html">Beranda</a>
             <a href="mentor-dashboard.html" class="active">Dashboard Pemateri</a>
@@ -220,7 +215,6 @@ function updateNavbar() {
             <a href="about.html">Tentang</a>
         `;
 
-        // Menu Kanan: HANYA Profil dan Tombol Keluar
         navActions.innerHTML = `
             <div class="user-profile">
                 <div class="user-avatar">${getInitials(user.name)}</div>
@@ -234,9 +228,7 @@ function updateNavbar() {
         return;
     }
 
-    // ====================
     // KONDISI 3: LOGIN SEBAGAI USER BIASA
-    // ====================
     navLinks.innerHTML = `
         <a href="index.html" class="active">Beranda</a>
         <a href="search.html">Cari Pemateri</a>
@@ -437,18 +429,14 @@ function protectPages() {
     const isSearchPage = path.includes("search.html");
     const isBecomeMentorPage = path.includes("become-mentor.html");
     const isDashboardPage = path.includes("mentor-dashboard.html");
-    const isHowItWorksPage = path.includes("how-it-works.html");
-    const isAboutPage = path.includes("about.html");
 
     const user = getCurrentUser();
 
-    // Halaman yang MEMBUTUHKAN login: search, become-mentor, dashboard
     if ((isSearchPage || isBecomeMentorPage || isDashboardPage) && !user) {
         window.location.href = "login.html";
         return;
     }
 
-    // Halaman dashboard hanya untuk mentor
     if (isDashboardPage && user) {
         const isUserMentor = user.role === "mentor" || user.isMentor === true;
         if (!isUserMentor) {
@@ -457,7 +445,6 @@ function protectPages() {
         }
     }
 
-    // Halaman login/register: jika sudah login, redirect ke halaman sesuai role
     if ((isLoginPage || isRegisterPage) && user) {
         if (user.role === "mentor" || user.isMentor === true) {
             window.location.href = "mentor-dashboard.html";
@@ -466,9 +453,6 @@ function protectPages() {
         }
         return;
     }
-
-    // Halaman how-it-works dan about: TIDAK butuh login, jadi tidak ada redirect
-    // Halaman index: TIDAK butuh login
 }
 
 function protectSearchPage() {
@@ -700,18 +684,53 @@ function switchModal(closeId, openId) {
     openModal(openId);
 }
 
+// =====================================================
+// FUNGSI TOGGLE MENU (DIPERBAIKI UNTUK MOBILE)
+// =====================================================
 function toggleMenu() {
-    const nav = document.querySelector(".nav-links");
+    const navLinks = document.querySelector(".nav-links");
     const menuButton = document.querySelector(".mobile-menu");
-    if (!nav) return;
 
-    const isOpen = nav.classList.toggle("active");
+    if (!navLinks) return;
 
+    // Toggle class "active" pada nav-links
+    const isOpen = navLinks.classList.toggle("active");
+
+    // Update tampilan tombol hamburger
     if (menuButton) {
         menuButton.setAttribute("aria-expanded", String(isOpen));
         menuButton.innerHTML = isOpen ? "✕" : "☰";
     }
 }
+
+// Tutup menu mobile saat link diklik
+document.addEventListener("click", function (event) {
+    const navLinks = document.querySelector(".nav-links");
+    if (!navLinks) return;
+
+    // Jika yang diklik adalah link di dalam nav-links
+    if (event.target.closest(".nav-links a")) {
+        navLinks.classList.remove("active");
+        const menuButton = document.querySelector(".mobile-menu");
+        if (menuButton) {
+            menuButton.setAttribute("aria-expanded", "false");
+            menuButton.innerHTML = "☰";
+        }
+    }
+});
+
+// Tutup menu mobile saat layar diperbesar ke desktop
+window.addEventListener("resize", function () {
+    if (window.innerWidth > 900) {
+        const navLinks = document.querySelector(".nav-links");
+        const menuButton = document.querySelector(".mobile-menu");
+        if (navLinks) navLinks.classList.remove("active");
+        if (menuButton) {
+            menuButton.setAttribute("aria-expanded", "false");
+            menuButton.innerHTML = "☰";
+        }
+    }
+});
 
 // =====================================================
 // FUNGSI HERO SEARCH
@@ -729,27 +748,19 @@ function handlePopularClick(keyword) {
 }
 
 // =====================================================
-// DOMCONTENTLOADED (INI YANG MENJALANKAN SEMUANYA)
+// DOMCONTENTLOADED
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Tambahkan tombol mobile menu jika belum ada
-    const navbar = document.querySelector(".navbar");
-    if (navbar && !navbar.querySelector(".mobile-menu")) {
-        const menuButton = document.createElement("button");
-        menuButton.className = "mobile-menu";
-        menuButton.type = "button";
-        menuButton.setAttribute("aria-label", "Buka menu");
-        menuButton.setAttribute("aria-expanded", "false");
-        menuButton.innerHTML = "☰";
-        menuButton.addEventListener("click", toggleMenu);
-        navbar.appendChild(menuButton);
-    } else if (navbar && navbar.querySelector(".mobile-menu")) {
-        navbar.querySelector(".mobile-menu").addEventListener("click", toggleMenu);
-    }
-
-    // Jalankan proteksi halaman dan update navbar
     protectPages();
-    updateNavbar(); // <--- INI YANG MEMBUAT NAVBAR BERUBAH
+    updateNavbar();
+
+    // Khusus halaman mentor-dashboard.html: isi nama pemateri
+    if (document.getElementById("mentorName")) {
+        const user = getCurrentUser();
+        if (user) {
+            document.getElementById("mentorName").textContent = user.name;
+        }
+    }
 
     // Render mentor jika ada grid
     if (document.getElementById("mentorGrid")) {
@@ -762,6 +773,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// =====================================================
+// FUNGSI TAMBAHAN UNTUK MENTOR DASHBOARD
+// =====================================================
+function showMentorProfile() {
+    const user = getCurrentUser();
+    if (!user) return;
+
+    const mentors = getSavedMentors();
+    const mentor = mentors.find(item => item.userId === user.id);
+
+    if (!mentor) {
+        showNotification("Data profil pemateri tidak ditemukan.", "error");
+        return;
+    }
+
+    showNotification(`Profil ${mentor.name} aktif sebagai pemateri.`, "success");
+}
+
+// Tutup modal saat klik di luar
 window.addEventListener("click", event => {
     if (event.target.classList.contains("modal")) {
         closeModal(event.target.id);

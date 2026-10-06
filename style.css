@@ -1216,14 +1216,16 @@ body.auth-page {
 }
 
 /* =========================
-   TABLET
+   TABLET (max-width: 900px)
 ========================= */
 
 @media (max-width: 900px) {
+  /* Sembunyikan menu desktop */
   .nav-links {
     display: none;
   }
 
+  /* Tampilkan tombol hamburger */
   .mobile-menu {
     display: block;
     background: none;
@@ -1231,9 +1233,10 @@ body.auth-page {
     font-size: 24px;
     cursor: pointer;
     color: #0f172a;
+    padding: 8px;
   }
 
-  /* Menu Mobile Aktif */
+  /* Menu Mobile Aktif — ini yang membuat menu muncul saat diklik */
   .nav-links.active {
     display: flex !important;
     flex-direction: column;
@@ -1247,6 +1250,24 @@ body.auth-page {
     border-bottom: 1px solid var(--line);
     z-index: 100;
     gap: 15px;
+    align-items: flex-start;
+  }
+
+  .nav-links.active a {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    width: 100%;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-links.active a:last-child {
+    border-bottom: none;
+  }
+
+  .nav-links.active a:hover {
+    color: var(--primary);
   }
 
   .hero {
@@ -1312,7 +1333,7 @@ body.auth-page {
 }
 
 /* =========================
-   MOBILE
+   MOBILE (max-width: 600px)
 ========================= */
 
 @media (max-width: 600px) {
@@ -1401,5 +1422,35 @@ body.auth-page {
 
   .auth-header h2 {
     font-size: 22px;
+  }
+
+  /* Navbar Mobile — sesuaikan ukuran */
+  .navbar {
+    padding: 0 5%;
+    height: 68px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  .nav-links.active {
+    top: 68px;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 }
