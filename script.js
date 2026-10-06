@@ -188,7 +188,9 @@ function updateNavbar() {
 
     const user = getCurrentUser();
 
+    // ====================
     // KONDISI 1: BELUM LOGIN
+    // ====================
     if (!user) {
         navLinks.innerHTML = `
             <a href="index.html" class="active">Beranda</a>
@@ -200,12 +202,13 @@ function updateNavbar() {
         navActions.innerHTML = `
             <a class="btn btn-ghost" href="login.html">Masuk</a>
             <a class="btn btn-primary" href="register.html">Daftar</a>
-            <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
         `;
         return;
     }
 
+    // ====================
     // KONDISI 2: LOGIN SEBAGAI PEMATERI / MENTOR
+    // ====================
     if (user.role === "mentor" || user.isMentor === true) {
         navLinks.innerHTML = `
             <a href="index.html">Beranda</a>
@@ -228,7 +231,9 @@ function updateNavbar() {
         return;
     }
 
+    // ====================
     // KONDISI 3: LOGIN SEBAGAI USER BIASA
+    // ====================
     navLinks.innerHTML = `
         <a href="index.html" class="active">Beranda</a>
         <a href="search.html">Cari Pemateri</a>
@@ -244,7 +249,6 @@ function updateNavbar() {
                 <span>Pengguna</span>
             </div>
         </div>
-        <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
         <button class="btn btn-ghost" onclick="logout()">Keluar</button>
     `;
 }
@@ -685,7 +689,7 @@ function switchModal(closeId, openId) {
 }
 
 // =====================================================
-// FUNGSI TOGGLE MENU (DIPERBAIKI UNTUK MOBILE)
+// FUNGSI TOGGLE MENU (MOBILE)
 // =====================================================
 function toggleMenu() {
     const navLinks = document.querySelector(".nav-links");
@@ -693,10 +697,8 @@ function toggleMenu() {
 
     if (!navLinks) return;
 
-    // Toggle class "active" pada nav-links
     const isOpen = navLinks.classList.toggle("active");
 
-    // Update tampilan tombol hamburger
     if (menuButton) {
         menuButton.setAttribute("aria-expanded", String(isOpen));
         menuButton.innerHTML = isOpen ? "✕" : "☰";
@@ -708,7 +710,6 @@ document.addEventListener("click", function (event) {
     const navLinks = document.querySelector(".nav-links");
     if (!navLinks) return;
 
-    // Jika yang diklik adalah link di dalam nav-links
     if (event.target.closest(".nav-links a")) {
         navLinks.classList.remove("active");
         const menuButton = document.querySelector(".mobile-menu");
