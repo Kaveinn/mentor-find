@@ -848,7 +848,7 @@ footer p {
 }
 
 /* =========================
-   MODAL
+   MODAL (DIPERBAIKI — z-index tinggi)
 ========================= */
 
 .modal {
@@ -856,10 +856,12 @@ footer p {
   position: fixed;
   inset: 0;
   background: rgba(20, 21, 40, 0.55);
-  z-index: 50;
+  z-index: 99999;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  pointer-events: auto;
+  overflow-y: auto;
 }
 
 .modal.show {
@@ -872,7 +874,12 @@ footer p {
   border-radius: 18px;
   padding: 30px;
   position: relative;
+  z-index: 100000;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: auto;
 }
 
 .modal-box h2 {
@@ -894,6 +901,8 @@ footer p {
   width: 28px;
   height: 28px;
   cursor: pointer;
+  z-index: 100001;
+  pointer-events: auto;
 }
 
 .modal-icon {
@@ -987,7 +996,7 @@ footer p {
 }
 
 /* =====================================================
-   CONTACT SECTION (di Modal Profil Pemateri)
+   CONTACT SECTION
 ===================================================== */
 
 .contact-section {
@@ -1031,7 +1040,7 @@ footer p {
 }
 
 /* =====================================================
-   FORM DI DALAM MODAL (Edit Profil)
+   FORM DI DALAM MODAL
 ===================================================== */
 
 .modal-box textarea.input {
@@ -1078,11 +1087,17 @@ footer p {
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+}
+
+.dashboard-card .btn {
+  margin-top: auto;
 }
 
 .dashboard-icon {
@@ -1135,7 +1150,7 @@ footer p {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 9999;
+  z-index: 999999;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1214,7 +1229,6 @@ footer p {
 
 /* =====================================================
    AUTHENTICATION PAGE
-   LOGIN & REGISTER
 ===================================================== */
 
 body.auth-page {
@@ -1348,7 +1362,6 @@ body.auth-page {
   font-weight: 600;
 }
 
-/* Alert Styles */
 .alert-box {
   margin-top: 1.25rem;
   padding: 0.75rem 1rem;
@@ -1481,7 +1494,6 @@ body.auth-page {
     grid-template-columns: 1fr 1fr;
   }
 
-  /* Mentor Dashboard jadi 2 kolom di tablet */
   .mentor-dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1579,7 +1591,6 @@ body.auth-page {
     font-size: 22px;
   }
 
-  /* Navbar Mobile */
   .navbar {
     padding: 0 5%;
     height: 68px;
@@ -1609,12 +1620,10 @@ body.auth-page {
     font-size: 12px;
   }
 
-  /* Mentor Dashboard jadi 1 kolom di HP */
   .mentor-dashboard-grid {
     grid-template-columns: 1fr;
   }
 
-  /* Modal di HP */
   .modal-box {
     padding: 24px 20px;
     max-height: 90vh;
@@ -1629,7 +1638,6 @@ body.auth-page {
     flex-direction: column;
   }
 
-  /* Notifikasi di HP */
   #notificationContainer {
     top: 12px;
     right: 12px;
@@ -1638,46 +1646,39 @@ body.auth-page {
   }
 }
 
-/* Preview Foto & CV */
+/* =====================================================
+   PREVIEW FOTO & CV
+===================================================== */
+
 #photoPreview img {
-    max-width: 100%;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    margin-top: 8px;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  margin-top: 8px;
 }
 
 #cvPreview div {
-    padding: 10px;
-    background: #f5f5fa;
-    border-radius: 8px;
-    font-size: 12px;
-    margin-top: 8px;
+  padding: 10px;
+  background: #f5f5fa;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-top: 8px;
 }
 
 input[type="file"].input {
-    padding: 8px 12px;
-    font-size: 12px;
-    cursor: pointer;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 input[type="file"].input::-webkit-file-upload-button {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 11px;
-    margin-right: 10px;
-}
-
-/* Card Dashboard */
-.dashboard-card {
-    display: flex;
-    flex-direction: column;
-}
-
-.dashboard-card .btn {
-    margin-top: auto;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+  margin-right: 10px;
 }

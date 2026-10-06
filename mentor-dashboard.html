@@ -9,9 +9,7 @@
 
 <body>
 
-<!-- =====================================================
-     NAVBAR
-     ===================================================== -->
+<!-- NAVBAR -->
 <header class="navbar">
     <a class="brand" href="index.html">
       <span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span>
@@ -31,18 +29,16 @@
     <button class="mobile-menu" onclick="toggleMenu()">☰</button>
 </header>
 
-<!-- =====================================================
-     DASHBOARD
-     ===================================================== -->
+<!-- DASHBOARD -->
 <main>
 <section class="section" style="padding-top: 90px; min-height: 75vh;">
     <div class="container">
 
-        <!-- BANNER: Profil belum lengkap -->
+        <!-- BANNER -->
         <div id="profileAlert" style="display: none; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 12px; padding: 16px 20px; margin-bottom: 25px;">
             <strong style="color: #92400e;">⚠️ Profil Anda Belum Lengkap</strong>
             <p style="margin: 8px 0 0; color: #78350f; font-size: 13px;">
-                Lengkapi profil Anda (CV, keahlian, dan nomor WhatsApp) agar muncul di halaman <strong>Cari Pemateri</strong>.
+                Lengkapi profil Anda (keahlian dan nomor WhatsApp) agar muncul di halaman <strong>Cari Pemateri</strong>.
             </p>
             <button class="btn btn-primary" style="margin-top: 12px;" onclick="openEditProfileModal()">
                 Lengkapi Sekarang
@@ -51,59 +47,43 @@
 
         <div class="hero-content" style="max-width: 800px; margin-bottom: 40px;">
             <span class="eyebrow">DASHBOARD PEMATERI</span>
-            <h1>
-                Selamat datang,
-                <span id="mentorName">Pemateri</span>
-            </h1>
-            <p>
-                Kelola profil, kompetensi,
-                pengalaman, dan portofolio
-                kamu sebagai pemateri di
-                MentorFind.
-            </p>
+            <h1>Selamat datang, <span id="mentorName">Pemateri</span></h1>
+            <p>Kelola profil, kompetensi, pengalaman, dan portofolio kamu sebagai pemateri di MentorFind.</p>
         </div>
 
         <!-- CARD GRID -->
         <div class="mentor-dashboard-grid">
 
-            <!-- Card 1: Profil Pemateri -->
+            <!-- Card 1 -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">👤</div>
                 <h3>Profil Pemateri</h3>
                 <p>Informasi profil kamu dapat dilihat oleh calon pengguna.</p>
-                <button class="btn btn-primary" onclick="showMentorProfile()">
-                    Lihat Profil
-                </button>
+                <button class="btn btn-primary" onclick="showMentorProfile()">Lihat Profil</button>
             </div>
 
-            <!-- Card 2: Kompetensi -->
+            <!-- Card 2 -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">🎯</div>
                 <h3>Kompetensi</h3>
                 <p>Tampilkan keahlian dan bidang yang kamu kuasai.</p>
-                <button class="btn btn-primary" onclick="openSkillsModal()">
-                    Kelola Kompetensi
-                </button>
+                <button class="btn btn-primary" onclick="openSkillsModal()">Kelola Kompetensi</button>
             </div>
 
-            <!-- Card 3: Portofolio -->
+            <!-- Card 3 -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">📁</div>
                 <h3>Portofolio</h3>
                 <p>Tampilkan pengalaman, hasil pekerjaan, dan CV Anda.</p>
-                <button class="btn btn-primary" onclick="openPortfolioModal()">
-                    Kelola Portofolio
-                </button>
+                <button class="btn btn-primary" onclick="openPortfolioModal()">Kelola Portofolio</button>
             </div>
 
-            <!-- Card 4: Edit Profil -->
+            <!-- Card 4 -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">✏️</div>
                 <h3>Edit Profil & Kontak</h3>
                 <p>Lengkapi data profil dan kontak WhatsApp kamu.</p>
-                <button class="btn btn-primary" onclick="openEditProfileModal()">
-                    Edit Profil
-                </button>
+                <button class="btn btn-primary" onclick="openEditProfileModal()">Edit Profil</button>
             </div>
 
         </div>
@@ -113,11 +93,7 @@
             <div>
                 <span class="eyebrow">INFORMASI</span>
                 <h2>Kamu sekarang adalah pemateri</h2>
-                <p>
-                    Akun pemateri memiliki halaman khusus. Untuk menjaga
-                    fokus platform, akun pemateri tidak dapat menggunakan
-                    fitur pencarian pemateri.
-                </p>
+                <p>Akun pemateri memiliki halaman khusus. Untuk menjaga fokus platform, akun pemateri tidak dapat menggunakan fitur pencarian pemateri.</p>
             </div>
         </div>
 
@@ -125,9 +101,7 @@
 </section>
 </main>
 
-<!-- =====================================================
-     FOOTER
-     ===================================================== -->
+<!-- FOOTER -->
 <footer class="footer">
     <div class="container">
         <p>© 2026 MentorFind. Platform pencarian pemateri berbasis kompetensi.</p>
@@ -135,7 +109,7 @@
 </footer>
 
 <!-- =====================================================
-     MODAL: EDIT PROFIL PEMATERI
+     MODAL: EDIT PROFIL (HANYA DATA DASAR)
      ===================================================== -->
 <div class="modal" id="editProfileModal">
     <div class="modal-box profile-modal">
@@ -176,25 +150,10 @@
         </div>
 
         <div class="form-group">
-            <label for="editSkills">Keahlian (pisahkan dengan koma)</label>
-            <input type="text" id="editSkills" class="input" placeholder="Contoh: JavaScript, React, Node.js">
-        </div>
-
-        <div class="form-group">
-            <label for="editDescription">Deskripsi Singkat (CV)</label>
-            <textarea id="editDescription" class="input" rows="3" placeholder="Ceritakan pengalaman dan keahlian Anda..."></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="editPortfolio">Portofolio</label>
-            <textarea id="editPortfolio" class="input" rows="2" placeholder="Contoh: Membangun platform e-commerce..."></textarea>
-        </div>
-
-        <div class="form-group">
             <label for="editPhone">Nomor WhatsApp <span style="color: #ef4444;">*</span></label>
             <input type="tel" id="editPhone" class="input" placeholder="Contoh: 08123456789" required>
             <small style="font-size: 11px; color: #64748b; display: block; margin-top: 4px;">
-                Format: 08xxx atau 62xxx. Akan digunakan untuk dihubungi calon pengguna.
+                Format: 08xxx atau 62xxx.
             </small>
         </div>
 
@@ -214,18 +173,12 @@
         <span class="eyebrow">KELOLA KOMPETENSI</span>
         <h2>Keahlian Anda</h2>
         <p class="muted" style="margin-bottom: 20px;">
-            Masukkan keahlian Anda, pisahkan dengan koma.
-            Contoh: JavaScript, React, Node.js
+            Masukkan keahlian Anda, pisahkan dengan koma. Contoh: JavaScript, React, Node.js
         </p>
 
         <div class="form-group">
             <label for="skillsInput">Keahlian</label>
-            <input 
-                type="text" 
-                id="skillsInput" 
-                class="input" 
-                placeholder="JavaScript, React, Node.js"
-            >
+            <input type="text" id="skillsInput" class="input" placeholder="JavaScript, React, Node.js">
             <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">
                 Pisahkan dengan koma (,)
             </small>
@@ -252,47 +205,27 @@
             Upload foto portofolio dan CV Anda. Data akan tampil di halaman Cari Pemateri.
         </p>
 
-        <!-- Upload Foto -->
         <div class="form-group">
             <label for="portfolioPhoto">Foto Portofolio</label>
-            <input 
-                type="file" 
-                id="portfolioPhoto" 
-                class="input" 
-                accept="image/*"
-                onchange="previewPhoto(event)"
-            >
+            <input type="file" id="portfolioPhoto" class="input" accept="image/*" onchange="previewPhoto(event)">
             <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">
                 Format: JPG/PNG, maks 500KB.
             </small>
             <div id="photoPreview" style="margin-top: 12px;"></div>
         </div>
 
-        <!-- Upload CV -->
         <div class="form-group">
             <label for="portfolioCV">File CV (PDF)</label>
-            <input 
-                type="file" 
-                id="portfolioCV" 
-                class="input" 
-                accept="application/pdf"
-                onchange="previewCV(event)"
-            >
+            <input type="file" id="portfolioCV" class="input" accept="application/pdf" onchange="previewCV(event)">
             <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">
                 Format: PDF, maks 1MB.
             </small>
             <div id="cvPreview" style="margin-top: 12px;"></div>
         </div>
 
-        <!-- Deskripsi Portofolio -->
         <div class="form-group">
             <label for="portfolioDesc">Deskripsi Portofolio</label>
-            <textarea 
-                id="portfolioDesc" 
-                class="input" 
-                rows="3" 
-                placeholder="Ceritakan portofolio atau proyek terbaik Anda..."
-            ></textarea>
+            <textarea id="portfolioDesc" class="input" rows="3" placeholder="Ceritakan portofolio atau proyek terbaik Anda..."></textarea>
         </div>
 
         <button class="btn btn-primary full" onclick="savePortfolio()" style="margin-top: 20px;">
