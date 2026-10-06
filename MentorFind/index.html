@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MentorFind — Platform Pencarian Pemateri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Navbar Global -->
+  <header class="navbar">
+    <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span></a>
+    <nav>
+      <a href="index.html" class="active">Beranda</a>
+      <a href="search.html">Cari Pemateri</a>
+      <a href="how-it-works.html">Cara Kerja</a>
+      <a href="about.html">Tentang</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Masuk</a>
+      <a class="btn btn-primary" href="register.html">Daftar</a>
+      <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
+    </div>
+    <button class="mobile-menu" onclick="toggleMenu()">☰</button>
+  </header>
+
+  <main>
+    <!-- Section 1: Hero Beranda Lengkap -->
+    <section id="home" class="hero">
+      <div class="hero-content">
+        <div class="eyebrow"><span>✦</span> Platform pencarian pemateri berbasis kompetensi</div>
+        <h1>Temukan <span>pemateri yang tepat</span> untuk acara Anda.</h1>
+        <p class="hero-copy">Cari narasumber berdasarkan kompetensi, portofolio, pengalaman, dan domisili dalam satu platform.</p>
+
+        <!-- Form Pencarian Cepat Langsung Menuju search.html -->
+        <form action="search.html" method="GET" class="hero-search" onsubmit="return handleHeroSearch(event)">
+          <div class="search-field">
+            <span>⌕</span>
+            <input name="q" id="heroKeyword" placeholder="Contoh: Web Development, IoT, UI/UX...">
+          </div>
+          <div class="search-field location-field">
+            <span>⌖</span>
+            <input name="loc" id="heroLocation" placeholder="Domisili">
+          </div>
+          <button type="submit" class="btn btn-primary btn-large">Cari Pemateri</button>
+        </form>
+
+        <div class="popular">
+          <span>Populer:</span>
+          <button type="button" onclick="handlePopularClick('Web Development')">Web Development</button>
+          <button type="button" onclick="handlePopularClick('IoT')">IoT</button>
+          <button type="button" onclick="handlePopularClick('UI/UX')">UI/UX</button>
+          <button type="button" onclick="handlePopularClick('Digital Marketing')">Digital Marketing</button>
+        </div>
+      </div>
+
+      <!-- Hero Visual & Floating Badge Card -->
+      <div class="hero-visual">
+        <div class="orb orb-one"></div>
+        <div class="orb orb-two"></div>
+        <div class="profile-preview">
+          <div class="verified">✓ Terverifikasi</div>
+          <div class="avatar avatar-lg">AS</div>
+          <h3>Andi Saputra</h3>
+          <p>Web Development & Software</p>
+          <div class="location">⌖ Malang, Jawa Timur</div>
+          <div class="rating">★ 4.9 <span>(32 ulasan)</span></div>
+          <div class="skill-row"><span>JavaScript</span><span>React</span><span>Node.js</span></div>
+        </div>
+        <div class="floating-card fc-top"><strong>1.240+</strong><span>Pemateri</span></div>
+        <div class="floating-card fc-bottom"><span class="mini-icon">✓</span><div><strong>Kompetensi terverifikasi</strong><small>Profil & portofolio</small></div></div>
+      </div>
+    </section>
+
+    <!-- Section 2: Statistik Platform -->
+    <section class="stats">
+      <div><strong>1.240+</strong><span>Pemateri Terdaftar</span></div>
+      <div><strong>35+</strong><span>Bidang Kompetensi</span></div>
+      <div><strong>120+</strong><span>Kota & Kabupaten</span></div>
+      <div><strong>4.8/5</strong><span>Rating Rata-rata</span></div>
+    </section>
+
+    <!-- Section 3: Ringkasan Cara Kerja (Mengarah ke Halaman Lengkap) -->
+    <section class="section how-section">
+      <div class="center-heading">
+        <span class="eyebrow">CARA KERJA</span>
+        <h2>Semudah menemukan pemateri</h2>
+        <p>Dirancang agar panitia, sekolah, kampus, komunitas, maupun perusahaan dapat menemukan narasumber dengan cepat.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">01</div>
+          <h3>Tentukan kebutuhan</h3>
+          <p>Masukkan topik yang dibutuhkan dan preferensi kota pelaksanaan.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <h3>Bandingkan profil</h3>
+          <p>Cek rekam jejak, portofolio, sertifikasi, dan testimoni peserta.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <h3>Hubungi pemateri</h3>
+          <p>Ajukan kerja sama langsung lewat platform tanpa repot.</p>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="how-it-works.html" class="btn btn-ghost">Pelajari Alur Lengkap →</a>
+      </div>
+    </section>
+
+    <!-- Section 4: Banner Ringkasan Tentang Kami -->
+    <section class="section about-section">
+      <div class="about-card">
+        <div>
+          <span class="eyebrow">TENTANG MENTORFIND</span>
+          <h2>Menghubungkan kebutuhan acara dengan kompetensi yang tepat.</h2>
+        </div>
+        <p>MentorFind mempertemukan pencari pemateri dengan narasumber berdasarkan kompetensi, portofolio, pengalaman, dan domisili dalam satu ekosistem yang transparan.</p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <a class="btn btn-primary" href="search.html">Eksplorasi Pemateri →</a>
+          <a class="btn btn-ghost" href="about.html">Baca Selengkapnya</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer Global -->
+  <footer>
+    <div class="footer-brand">
+      <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span></a>
+      <p>Platform pencarian pemateri berbasis kompetensi.</p>
+    </div>
+    <div>
+      <h4>Platform</h4>
+      <a href="search.html">Cari Pemateri</a>
+      <a href="how-it-works.html">Cara Kerja</a>
+      <a href="about.html">Tentang</a>
+    </div>
+    <div>
+      <h4>Untuk Pemateri</h4>
+      <a href="become-mentor.html">Daftar sebagai Pemateri</a>
+      <a href="#">Panduan Profil</a>
+    </div>
+    <div>
+      <h4>Kontak</h4>
+      <a href="mailto:hello@mentorfind.id">hello@mentorfind.id</a>
+      <a href="#">Pusat Bantuan</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

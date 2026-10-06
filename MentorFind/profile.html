@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Saya — MentorFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar Header -->
+  <header class="navbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Beranda</a></li>
+      <li><a href="search.html">Cari Pemateri</a></li>
+      <li><a href="how-it-works.html">Cara Kerja</a></li>
+      <li><a href="about.html">Tentang</a></li>
+    </ul>
+    <div class="nav-actions"></div>
+  </header>
+
+  <!-- Konten Profil -->
+  <main style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+    <div style="background: #fff; padding: 32px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+      <h2 style="margin-top: 0; color: #0f172a;">Profil Saya</h2>
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+      <div id="profileDetails">
+        <!-- Diisi otomatis oleh JavaScript -->
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px;">
+        <a href="search.html" class="btn btn-primary">Cari Pemateri Sekarang</a>
+        <button onclick="handleLogout()" class="btn btn-outline" style="border: 1px solid #cbd5e1; background: #fff; cursor: pointer;">Keluar dari Akun</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const activeUser = JSON.parse(localStorage.getItem("mentorfind_active_user"));
+      
+      // Jika belum login, alihkan ke login
+      if (!activeUser) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const container = document.getElementById("profileDetails");
+      container.innerHTML = `
+        <p><strong>Nama Lengkap:</strong> ${activeUser.name}</p>
+        <p><strong>Email:</strong> ${activeUser.email}</p>
+        <p><strong>Tipe Akun:</strong> <span style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 600;">${activeUser.role || 'Pencari Pemateri'}</span></p>
+      `;
+    });
+  </script>
+</body>
+</html>
