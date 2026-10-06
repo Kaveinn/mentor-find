@@ -91,7 +91,6 @@ const defaultMentors = [
     }
 ];
 
-// Local Storage Helpers
 function getUsers() {
     return JSON.parse(localStorage.getItem("mentorfind_users")) || [];
 }
@@ -126,6 +125,7 @@ function getAllMentors() {
 
 function getInitials(name) {
     if (!name) return "U";
+
     return name
         .split(" ")
         .map(word => word.charAt(0))
@@ -134,7 +134,6 @@ function getInitials(name) {
         .toUpperCase();
 }
 
-// Notification System
 function showNotification(message, type = "success") {
     let container = document.getElementById("notificationContainer");
 
@@ -161,11 +160,12 @@ function showNotification(message, type = "success") {
 
     setTimeout(() => {
         notification.classList.add("hide");
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
     }, 3500);
 }
 
-// UI & Navbar Updates
 function updateNavbar() {
     const navActions = document.querySelector(".nav-actions");
     if (!navActions) return;
@@ -209,19 +209,37 @@ function updateNavbar() {
     `;
 }
 
-// Authentication Handlers
 function handleAuthSubmit(event, type) {
-    event.preventDefault();
+    if (event) event.preventDefault();
 
     if (type === "login") {
-        const emailInput = document.getElementById("loginEmail") || document.querySelector('input[type="email"]');
-        const passwordInput = document.getElementById("loginPassword") || document.querySelector('input[type="password"]');
+        const root = event && event.target && event.target.tagName === "FORM" ? event.target : document;
+
+        const emailInput =
+            root.querySelector('#loginEmail') ||
+            root.querySelector('input[type="email"]') ||
+            root.querySelector('input[name="email"]');
+
+        const passwordInput =
+            root.querySelector('#loginPassword') ||
+            root.querySelector('input[type="password"]') ||
+            root.querySelector('input[name="password"]');
 
         const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
         const password = passwordInput ? passwordInput.value : "";
 
+        if (!email || !password) {
+            showNotification("Email dan password harus diisi.", "warning");
+            return;
+        }
+
         const users = getUsers();
-        const user = users.find(item => item.email && item.email.toLowerCase() === email && item.password === password);
+        const user = users.find(
+            item =>
+                item.email &&
+                item.email.toLowerCase() === email &&
+                item.password === password
+        );
 
         if (!user) {
             showNotification("Email atau password salah.", "error");
@@ -232,7 +250,11 @@ function handleAuthSubmit(event, type) {
         showNotification("Login berhasil.", "success");
 
         setTimeout(() => {
-            window.location.href = "index.html";
+            if (user.role === "mentor" || user.isMentor === true) {
+                window.location.href = "mentor-dashboard.html";
+            } else {
+                window.location.href = "index.html";
+            }
         }, 700);
 
         return;
@@ -244,48 +266,89 @@ function handleAuthSubmit(event, type) {
 }
 
 function handleRegister(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
 
-    const nameInput = document.getElementById("registerName") || document.querySelector('input[name="name"]');
-    const emailInput = document.getElementById("registerEmail") || document.querySelector('input[type="email"]');
-    const passwordInput = document.getElementById("registerPassword") || document.querySelector('input[type="password"]');
+    // 1. Ambil form atau dokumen sebagai area pencarian
+    const form = event && event.target && event.target.tagName === "FORM" ? event.target : document;
 
+    // 2. Ambil elemen input secara presisi & fallback
+    const nameInput = document.getElementById("registerName") || form.querySelector('input[type="text"]');
+    const emailInput = document.getElementById("registerEmail") || form.querySelector('input[type="email"]');
+    const passwordInput = document.getElementById("registerPassword") || form.querySelector('input[type="password"]');
+    const roleSelect = document.getElementById("registerRole") || form.querySelector('select');
+
+    // 3. Ambil nilainya
     const name = nameInput ? nameInput.value.trim() : "";
     const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
-    const password = passwordInput ? passwordInput.value : "";
+    const password = passwordInput ? passwordInput.value.trim() : "";
+    const roleValue = roleSelect ? roleSelect.value.toLowerCase() : "user";
 
+    // Pengecekan role pemateri / mentor
+    const isMentor = roleValue.includes("mentor") || roleValue.includes("pemateri");
+
+    // Validasi data kosong
     if (!name || !email || !password) {
         showNotification("Semua data harus diisi.", "warning");
         return;
     }
 
-    const users = getUsers();
-    const existingUser = users.find(user => user.email && user.email.toLowerCase() === email);
+    // Ambil data users dari LocalStorage
+    const users = JSON.parse(localStorage.getItem("mentorfind_users")) || [];
 
+    // Cek ketersediaan email
+    const existingUser = users.find(u => u.email && u.email.toLowerCase() === email);
     if (existingUser) {
         showNotification("Email sudah terdaftar.", "error");
         return;
     }
 
-    const user = {
-        id: Date.now(),
-        name,
-        email,
-        password,
-        role: "user",
-        isMentor: false
+    // Buat data user baru
+    const userId = Date.now();
+    const newUser = {
+        id: userId,
+        name: name,
+        email: email,
+        password: password,
+        role: isMentor ? "mentor" : "user",
+        isMentor: isMentor
     };
 
-    users.push(user);
-    saveUsers(users);
-    saveCurrentUser(user);
+    users.push(newUser);
+    localStorage.setItem("mentorfind_users", JSON.stringify(users));
+    localStorage.setItem("mentorfind_user", JSON.stringify(newUser));
 
-    showNotification("Pendaftaran berhasil.", "success");
+    // Jika tipe akun Pemateri, tambahkan profil awal pemateri
+    if (isMentor) {
+        const mentors = JSON.parse(localStorage.getItem("mentorfind_mentors")) || [];
+        mentors.push({
+            id: "mentor-" + userId,
+            name: name,
+            initials: name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase(),
+            role: "Pemateri Baru",
+            location: "Indonesia",
+            city: "Indonesia",
+            category: "Umum",
+            exp: 1,
+            rating: 5,
+            skills: ["Pemateri"],
+            desc: "Profil pemateri terdaftar.",
+            portfolio: "Portofolio belum diisi.",
+            userId: userId
+        });
+        localStorage.setItem("mentorfind_mentors", JSON.stringify(mentors));
+    }
+
+    showNotification("Pendaftaran berhasil!", "success");
 
     setTimeout(() => {
-        window.location.href = "index.html";
-    }, 700);
+        if (isMentor) {
+            window.location.href = "mentor-dashboard.html";
+        } else {
+            window.location.href = "index.html";
+        }
+    }, 800);
 }
+
 
 function handleLogin(event) {
     handleAuthSubmit(event, "login");
@@ -301,7 +364,6 @@ function handleLogout() {
     logout();
 }
 
-// Page Access Protection
 function protectPages() {
     const path = window.location.pathname.toLowerCase();
 
@@ -318,13 +380,20 @@ function protectPages() {
         return;
     }
 
-    if (isDashboardPage && user && user.role !== "mentor" && user.isMentor !== true) {
-        window.location.href = "index.html";
-        return;
+    if (isDashboardPage && user) {
+        const isUserMentor = user.role === "mentor" || user.isMentor === true;
+        if (!isUserMentor) {
+            window.location.href = "index.html";
+            return;
+        }
     }
 
     if ((isLoginPage || isRegisterPage) && user) {
-        window.location.href = "index.html";
+        if (user.role === "mentor" || user.isMentor === true) {
+            window.location.href = "mentor-dashboard.html";
+        } else {
+            window.location.href = "index.html";
+        }
     }
 }
 
@@ -342,18 +411,19 @@ function protectBecomeMentorPage() {
 
 function protectMentorDashboard() {
     const user = getCurrentUser();
+
     if (!user) {
         window.location.href = "login.html";
         return;
     }
+
     if (user.role !== "mentor" && user.isMentor !== true) {
         window.location.href = "index.html";
     }
 }
 
-// Mentor Registration Form Handler
 function handleMentorSubmit(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
 
     const user = getCurrentUser();
     if (!user) {
@@ -361,13 +431,12 @@ function handleMentorSubmit(event) {
         return;
     }
 
-    const form = event.target;
-    const role = form.querySelector('[name="role"]')?.value || document.getElementById("mentorRole")?.value || "";
-    const location = form.querySelector('[name="location"]')?.value || document.getElementById("mentorLocation")?.value || "";
-    const category = form.querySelector('[name="category"]')?.value || document.getElementById("mentorCategory")?.value || "";
-    const experience = form.querySelector('[name="experience"]')?.value || document.getElementById("mentorExperience")?.value || 0;
-    const description = form.querySelector('[name="description"]')?.value || document.getElementById("mentorDescription")?.value || "";
-    const portfolio = form.querySelector('[name="portfolio"]')?.value || document.getElementById("mentorPortfolio")?.value || "";
+    const role = document.getElementById("mentorRole")?.value || document.querySelector('[name="role"]')?.value || "";
+    const location = document.getElementById("mentorLocation")?.value || document.querySelector('[name="location"]')?.value || "";
+    const category = document.getElementById("mentorCategory")?.value || document.querySelector('[name="category"]')?.value || "";
+    const experience = document.getElementById("mentorExperience")?.value || document.querySelector('[name="experience"]')?.value || 0;
+    const description = document.getElementById("mentorDescription")?.value || document.querySelector('[name="description"]')?.value || "";
+    const portfolio = document.getElementById("mentorPortfolio")?.value || document.querySelector('[name="portfolio"]')?.value || "";
 
     if (!role || !location || !category) {
         showNotification("Lengkapi data pemateri terlebih dahulu.", "warning");
@@ -378,15 +447,15 @@ function handleMentorSubmit(event) {
         id: "mentor-" + Date.now(),
         name: user.name,
         initials: getInitials(user.name),
-        role,
-        location,
+        role: role,
+        location: location,
         city: location,
-        category,
+        category: category,
         exp: Number(experience) || 0,
         rating: 5,
         skills: [],
         desc: description,
-        portfolio,
+        portfolio: portfolio,
         userId: user.id
     };
 
@@ -412,11 +481,6 @@ function handleMentorSubmit(event) {
     }, 700);
 }
 
-// State Data
-let mentorsData = getAllMentors();
-let current = [...mentorsData];
-
-// Filter & Search Functionality
 function applyFilters() {
     const keyword = document.getElementById("searchKeyword")?.value.trim().toLowerCase() || "";
     const location = document.getElementById("filterLocation")?.value || "";
@@ -427,28 +491,27 @@ function applyFilters() {
     const mentors = getAllMentors();
 
     const result = mentors.filter(mentor => {
-        const name = (mentor.name || "").toLowerCase();
-        const role = (mentor.role || "").toLowerCase();
-        const mentorLocation = (mentor.location || "").toLowerCase();
-        const city = (mentor.city || "").toLowerCase();
-        const mentorCategory = (mentor.category || "").toLowerCase();
-        const desc = (mentor.desc || "").toLowerCase();
-        const skillsText = Array.isArray(mentor.skills) ? mentor.skills.join(" ").toLowerCase() : "";
+        const searchText = [
+            mentor.name,
+            mentor.role,
+            mentor.location,
+            mentor.city,
+            mentor.category,
+            mentor.desc,
+            ...(mentor.skills || [])
+        ].join(" ").toLowerCase();
 
-        const fullSearchText = `${name} ${role} ${mentorLocation} ${city} ${mentorCategory} ${desc} ${skillsText}`;
-
-        const matchesKeyword = !keyword || fullSearchText.includes(keyword);
-        const matchesLocation = !location || mentor.city === location;
-        const matchesCategory = !category || mentor.category === category;
-        const matchesExp = mentor.exp >= experience;
-        const matchesRating = mentor.rating >= rating;
-
-        return matchesKeyword && matchesLocation && matchesCategory && matchesExp && matchesRating;
+        return (
+            (!keyword || searchText.includes(keyword)) &&
+            (!location || mentor.city === location) &&
+            (!category || mentor.category === category) &&
+            mentor.exp >= experience &&
+            mentor.rating >= rating
+        );
     });
 
-    mentorsData = mentors;
     current = [...result];
-
+    mentorsData = mentors;
     renderMentors();
 }
 
@@ -459,9 +522,11 @@ function resetFilters() {
 
     mentorsData = getAllMentors();
     current = [...mentorsData];
-
     renderMentors();
 }
+
+let mentorsData = getAllMentors();
+let current = [...mentorsData];
 
 function renderMentors() {
     const grid = document.getElementById("mentorGrid");
@@ -508,7 +573,6 @@ function showProfile(index) {
     }
 
     const user = getCurrentUser();
-
     if (user.role === "mentor" || user.isMentor === true) {
         showNotification("Pemateri tidak dapat mencari pemateri lain.", "warning");
         return;
@@ -545,7 +609,6 @@ function showProfile(index) {
     openModal("profileModal");
 }
 
-// Modal Handlers
 function openModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
@@ -565,21 +628,27 @@ function switchModal(closeId, openId) {
     openModal(openId);
 }
 
-// Mobile Menu Toggle
 function toggleMenu() {
-    const navbar = document.querySelector(".navbar");
-    if (!navbar) return;
+    const nav = document.querySelector("nav");
+    const menuButton = document.querySelector(".mobile-menu");
+    if (!nav) return;
 
-    const nav = navbar.querySelector("nav");
-    const navLinks = navbar.querySelector(".nav-links");
-    const navActions = navbar.querySelector(".nav-actions");
-    const menuButton = navbar.querySelector(".mobile-menu");
+    const isOpen = nav.classList.toggle("active");
 
-    const isOpen = navbar.classList.toggle("mobile-menu-open");
-
-    if (nav) nav.classList.toggle("mobile-open", isOpen);
-    if (navLinks) navLinks.classList.toggle("mobile-open", isOpen);
-    if (navActions) navActions.classList.toggle("mobile-open", isOpen);
+    if (isOpen) {
+        nav.style.display = "flex";
+        nav.style.flexDirection = "column";
+        nav.style.position = "absolute";
+        nav.style.top = "70px";
+        nav.style.left = "0";
+        nav.style.width = "100%";
+        nav.style.background = "#ffffff";
+        nav.style.padding = "20px";
+        nav.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
+        nav.style.zIndex = "999";
+    } else {
+        nav.style.display = "";
+    }
 
     if (menuButton) {
         menuButton.setAttribute("aria-expanded", String(isOpen));
@@ -587,7 +656,6 @@ function toggleMenu() {
     }
 }
 
-// Event Listeners Initialization
 document.addEventListener("DOMContentLoaded", () => {
     const navbar = document.querySelector(".navbar");
 
@@ -600,45 +668,25 @@ document.addEventListener("DOMContentLoaded", () => {
         menuButton.innerHTML = "☰";
         menuButton.addEventListener("click", toggleMenu);
         navbar.appendChild(menuButton);
+    } else if (navbar && navbar.querySelector(".mobile-menu")) {
+        navbar.querySelector(".mobile-menu").addEventListener("click", toggleMenu);
     }
 
     protectPages();
     updateNavbar();
 
     if (document.getElementById("mentorGrid")) {
-        mentorsData = getAllMentors();
-        current = [...mentorsData];
-        renderMentors();
+        const user = getCurrentUser();
+        if (!user || (user.role !== "mentor" && user.isMentor !== true)) {
+            mentorsData = getAllMentors();
+            current = [...mentorsData];
+            renderMentors();
+        }
     }
 });
 
-// Close Modal on Overlay Click
 window.addEventListener("click", event => {
     if (event.target.classList.contains("modal")) {
         closeModal(event.target.id);
-    }
-});
-
-// Close Mobile Menu on Nav Link Click
-document.addEventListener("click", event => {
-    const link = event.target.closest(".nav-links a");
-    if (!link) return;
-
-    const navbar = document.querySelector(".navbar");
-    if (!navbar) return;
-
-    const nav = navbar.querySelector("nav");
-    const navLinks = navbar.querySelector(".nav-links");
-    const navActions = navbar.querySelector(".nav-actions");
-
-    navbar.classList.remove("mobile-menu-open");
-    if (nav) nav.classList.remove("mobile-open");
-    if (navLinks) navLinks.classList.remove("mobile-open");
-    if (navActions) navActions.classList.remove("mobile-open");
-
-    const menuButton = navbar.querySelector(".mobile-menu");
-    if (menuButton) {
-        menuButton.setAttribute("aria-expanded", "false");
-        menuButton.innerHTML = "☰";
     }
 });

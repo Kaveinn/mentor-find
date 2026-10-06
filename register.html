@@ -19,32 +19,33 @@
       <p>Buat akun baru untuk terhubung dengan pemateri</p>
     </div>
 
-    <form onsubmit="handleRegister(event)">
-      <div class="form-group">
-        <label for="regName">Nama Lengkap</label>
-        <input id="regName" type="text" placeholder="Masukkan nama lengkap" required>
-      </div>
+<form onsubmit="handleRegister(event)">
+    <div class="form-group">
+        <label for="registerName">Nama Lengkap</label>
+        <input type="text" id="registerName" name="name" required placeholder="Nama Lengkap">
+    </div>
 
-      <div class="form-group">
-        <label for="regEmail">Email</label>
-        <input id="regEmail" type="email" placeholder="nama@email.com" required>
-      </div>
+    <div class="form-group">
+        <label for="registerEmail">Email</label>
+        <input type="email" id="registerEmail" name="email" required placeholder="Email">
+    </div>
 
-      <div class="form-group">
-        <label for="regRole">Tipe Akun</label>
-        <select id="regRole">
-          <option value="Pencari Pemateri">Pencari Pemateri</option>
-          <option value="Pemateri">Pemateri</option>
+    <div class="form-group">
+        <label for="registerRole">Tipe Akun</label>
+        <select id="registerRole" name="role" required>
+            <option value="user">Pengguna (Cari Pemateri)</option>
+            <option value="mentor">Pemateri</option>
         </select>
-      </div>
+    </div>
 
-      <div class="form-group">
-        <label for="regPassword">Password</label>
-        <input id="regPassword" type="password" placeholder="Minimal 8 karakter" required>
-      </div>
+    <div class="form-group">
+        <label for="registerPassword">Password</label>
+        <input type="password" id="registerPassword" name="password" required placeholder="Password">
+    </div>
 
-      <button type="submit" class="btn-auth">Buat Akun</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Buat Akun</button>
+</form>
+
 
     <div id="registerAlert"></div>
 
