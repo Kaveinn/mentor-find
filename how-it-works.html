@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cara Kerja — MentorFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span></a>
+    <nav>
+      <a href="index.html">Beranda</a>
+      <a href="search.html">Cari Pemateri</a>
+      <a href="how-it-works.html" class="active">Cara Kerja</a>
+      <a href="about.html">Tentang</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Masuk</a>
+      <a class="btn btn-primary" href="register.html">Daftar</a>
+      <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
+    </div>
+    <button class="mobile-menu" onclick="toggleMenu()">☰</button>
+  </header>
+
+  <main>
+    <section class="section how-section">
+      <div class="center-heading">
+        <span class="eyebrow">ALUR & SISTEM</span>
+        <h2>Semudah menemukan pemateri</h2>
+        <p>Dirancang agar panitia, sekolah, kampus, komunitas, maupun perusahaan dapat menemukan narasumber dengan cepat dan terverifikasi.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">01</div>
+          <h3>Tentukan kebutuhan</h3>
+          <p>Masukkan kompetensi atau topik yang Anda butuhkan serta lokasi acara, baik luring (offline) maupun daring (online).</p>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <h3>Bandingkan profil</h3>
+          <p>Lihat rekam jejak, portofolio proyek, ulasan acara sebelumnya, serta tarif kompensasi yang transparan.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <h3>Hubungi & Jadwalkan</h3>
+          <p>Kirim undangan kerja sama resmi melalui platform dan koordinasikan materi langsung dengan pemateri.</p>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 3rem;">
+        <a href="search.html" class="btn btn-primary btn-large">Mulai Cari Pemateri Sekarang</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span></a><p>Platform pencarian pemateri berbasis kompetensi.</p></div>
+    <div><h4>Platform</h4><a href="search.html">Cari Pemateri</a><a href="how-it-works.html">Cara Kerja</a><a href="about.html">Tentang</a></div>
+    <div><h4>Untuk Pemateri</h4><a href="become-mentor.html">Daftar sebagai Pemateri</a><a href="#">Panduan Profil</a></div>
+    <div><h4>Kontak</h4><a href="mailto:hello@mentorfind.id">hello@mentorfind.id</a><a href="#">Pusat Bantuan</a></div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

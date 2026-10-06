@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cari Pemateri — MentorFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Navbar Dynamic Header -->
+  <header class="navbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Beranda</a>
+      <a href="search.html" class="active">Cari Pemateri</a>
+      <a href="how-it-works.html">Cara Kerja</a>
+      <a href="about.html">Tentang</a>
+    </nav>
+
+    <!-- Tempat Aksi Navbar (Otomatis di-render script.js) -->
+    <div class="nav-actions"></div>
+
+    <button class="mobile-menu" onclick="toggleMenu()">☰</button>
+  </header>
+
+  <main>
+    <section class="section search-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">PENCARIAN CERDAS</span>
+          <h2>Temukan pemateri sesuai kebutuhan</h2>
+        </div>
+        <p>Gunakan filter untuk mempersempit hasil berdasarkan kompetensi, domisili, pengalaman, dan rating.</p>
+      </div>
+
+      <!-- Pemberitahuan Role Akses (Khusus Pemateri) -->
+      <div id="roleNotice" style="margin-bottom: 20px;"></div>
+
+      <div class="search-layout">
+        <aside class="filter-panel">
+          <div class="filter-title">Filter Pencarian <button onclick="resetFilters()">Reset</button></div>
+          <label>Kata kunci</label>
+          <input id="keyword" class="input" placeholder="Kompetensi / nama...">
+          
+          <label>Domisili</label>
+          <select id="location" class="input">
+            <option value="">Semua lokasi</option>
+            <option>Malang</option><option>Surabaya</option><option>Bandung</option>
+            <option>Jakarta</option><option>Yogyakarta</option><option>Semarang</option>
+          </select>
+          
+          <label>Bidang kompetensi</label>
+          <select id="category" class="input">
+            <option value="">Semua bidang</option>
+            <option>Teknologi</option><option>Desain</option><option>Bisnis</option>
+            <option>Marketing</option><option>Elektronika</option><option>Pendidikan</option>
+          </select>
+
+          <label>Pengalaman minimal</label>
+          <select id="experience" class="input">
+            <option value="">Semua pengalaman</option>
+            <option value="1">1+ tahun</option>
+            <option value="3">3+ tahun</option>
+            <option value="5">5+ tahun</option>
+            <option value="10">10+ tahun</option>
+          </select>
+
+          <label>Rating minimal</label>
+          <select id="rating" class="input">
+            <option value="">Semua rating</option>
+            <option value="4.5">4.5+</option>
+            <option value="4.8">4.8+</option>
+          </select>
+
+          <button class="btn btn-primary full" onclick="applyFilters()">Terapkan Filter</button>
+        </aside>
+
+        <div class="results">
+          <div class="results-top">
+            <span id="resultCount">Memuat pemateri...</span>
+            <select id="sort" onchange="renderMentors()">
+              <option value="relevance">Paling relevan</option>
+              <option value="rating">Rating tertinggi</option>
+              <option value="experience">Pengalaman terbanyak</option>
+            </select>
+          </div>
+
+          <div id="mentorGrid" class="mentor-grid"></div>
+
+          <div id="emptyState" class="empty hidden">
+            <div>⌕</div>
+            <h3>Pemateri tidak ditemukan</h3>
+            <p>Coba ubah kata kunci atau reset filter pencarian.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand">
+      <a class="brand" href="index.html"><span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span></a>
+      <p>Platform pencarian pemateri berbasis kompetensi.</p>
+    </div>
+    <div>
+      <h4>Platform</h4>
+      <a href="search.html">Cari Pemateri</a>
+      <a href="how-it-works.html">Cara Kerja</a>
+      <a href="about.html">Tentang</a>
+    </div>
+    <div>
+      <h4>Untuk Pemateri</h4>
+      <a href="become-mentor.html">Daftar sebagai Pemateri</a>
+      <a href="#">Panduan Profil</a>
+    </div>
+    <div>
+      <h4>Kontak</h4>
+      <a href="mailto:hello@mentorfind.id">hello@mentorfind.id</a>
+      <a href="#">Pusat Bantuan</a>
+    </div>
+  </footer>
+
+  <!-- Modal Detail Profil Pemateri -->
+  <div id="profileModal" class="modal">
+    <div class="modal-box profile-modal">
+      <button class="modal-close" onclick="closeModal('profileModal')">×</button>
+      <div id="profileContent"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
