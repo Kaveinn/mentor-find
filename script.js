@@ -167,20 +167,43 @@ function showNotification(message, type = "success") {
 }
 
 function updateNavbar() {
-    const navActions = document.querySelector(".nav-actions");
-    if (!navActions) return;
+    const navLinks = document.getElementById("mainNavLinks");   // Menu Tengah
+    const navActions = document.getElementById("mainNavActions"); // Menu Kanan
+    
+    if (!navLinks || !navActions) return;
 
     const user = getCurrentUser();
 
+    // 1. JIKA BELUM LOGIN
     if (!user) {
+        // Kembalikan menu default
+        navLinks.innerHTML = `
+            <a href="index.html" class="active">Beranda</a>
+            <a href="search.html">Cari Pemateri</a>
+            <a href="how-it-works.html">Cara Kerja</a>
+            <a href="about.html">Tentang</a>
+        `;
+        
         navActions.innerHTML = `
-            <button class="btn btn-ghost" onclick="window.location.href='login.html'">Masuk</button>
-            <button class="btn btn-primary" onclick="window.location.href='register.html'">Daftar</button>
+            <a class="btn btn-ghost" href="login.html">Masuk</a>
+            <a class="btn btn-primary" href="register.html">Daftar</a>
+            <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
         `;
         return;
     }
 
+    // 2. JIKA LOGIN SEBAGAI PEMATERI / MENTOR
     if (user.role === "mentor" || user.isMentor === true) {
+        // Sisipkan "Dashboard Pemateri" TEPAT SETELAH "Beranda"
+        navLinks.innerHTML = `
+            <a href="index.html">Beranda</a>
+            <a href="mentor-dashboard.html" class="active">Dashboard Pemateri</a>
+            <a href="search.html">Cari Pemateri</a>
+            <a href="how-it-works.html">Cara Kerja</a>
+            <a href="about.html">Tentang</a>
+        `;
+
+        // Menu Kanan HANYA berisi Profil dan Tombol Keluar
         navActions.innerHTML = `
             <div class="user-profile">
                 <div class="user-avatar">${getInitials(user.name)}</div>
@@ -189,11 +212,18 @@ function updateNavbar() {
                     <span>Pemateri</span>
                 </div>
             </div>
-            <a class="btn btn-primary" href="mentor-dashboard.html">Dashboard Pemateri</a>
             <button class="btn btn-ghost" onclick="logout()">Keluar</button>
         `;
         return;
     }
+
+    // 3. JIKA LOGIN SEBAGAI USER BIASA
+    navLinks.innerHTML = `
+        <a href="index.html" class="active">Beranda</a>
+        <a href="search.html">Cari Pemateri</a>
+        <a href="how-it-works.html">Cara Kerja</a>
+        <a href="about.html">Tentang</a>
+    `;
 
     navActions.innerHTML = `
         <div class="user-profile">
@@ -203,11 +233,11 @@ function updateNavbar() {
                 <span>Pengguna</span>
             </div>
         </div>
-        <a class="btn btn-primary" href="search.html">Cari Pemateri</a>
-        <a class="btn btn-ghost" href="become-mentor.html">Menjadi Pemateri</a>
+        <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
         <button class="btn btn-ghost" onclick="logout()">Keluar</button>
     `;
 }
+
 
 function handleAuthSubmit(event, type) {
     if (event) event.preventDefault();
@@ -268,41 +298,81 @@ function handleAuthSubmit(event, type) {
 function handleRegister(event) {
     if (event) event.preventDefault();
 
-    // 1. Ambil form atau dokumen sebagai area pencarian
-    const form = event && event.target && event.target.tagName === "FORM" ? event.target : document;
+    // 1. Ambil form dengan cara yang lebih aman
+    let form = null;
+    if (event && event.target) {
+        if (event.target.tagName === "FORM") {
+            form = event.target;
+        } else {
+            // Jika yang diklik adalah tombol, cari form terdekat
+            form = event.target.closest("form");
+        }
+    }
+    
+    // Fallback jika form tidak ditemukan
+    if (!form) {
+        form = document.querySelector("form");
+    }
 
-    // 2. Ambil elemen input secara presisi & fallback
-    const nameInput = document.getElementById("registerName") || form.querySelector('input[type="text"]');
-    const emailInput = document.getElementById("registerEmail") || form.querySelector('input[type="email"]');
-    const passwordInput = document.getElementById("registerPassword") || form.querySelector('input[type="password"]');
-    const roleSelect = document.getElementById("registerRole") || form.querySelector('select');
-
-    // 3. Ambil nilainya
-    const name = nameInput ? nameInput.value.trim() : "";
-    const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
-    const password = passwordInput ? passwordInput.value.trim() : "";
-    const roleValue = roleSelect ? roleSelect.value.toLowerCase() : "user";
-
-    // Pengecekan role pemateri / mentor
-    const isMentor = roleValue.includes("mentor") || roleValue.includes("pemateri");
-
-    // Validasi data kosong
-    if (!name || !email || !password) {
-        showNotification("Semua data harus diisi.", "warning");
+    if (!form) {
+        showNotification("Formulir tidak ditemukan!", "error");
         return;
     }
 
-    // Ambil data users dari LocalStorage
-    const users = JSON.parse(localStorage.getItem("mentorfind_users")) || [];
+    // 2. Ambil elemen input berdasarkan ID atau NAME (lebih akurat daripada type)
+    // Sesuaikan ID ini dengan yang ada di HTML Anda
+    const nameInput = form.querySelector('#registerName') || form.querySelector('input[name="name"]') || form.querySelector('input[type="text"]');
+    const emailInput = form.querySelector('#registerEmail') || form.querySelector('input[name="email"]') || form.querySelector('input[type="email"]');
+    const passwordInput = form.querySelector('#registerPassword') || form.querySelector('input[name="password"]') || form.querySelector('input[type="password"]');
+    const roleSelect = form.querySelector('#registerRole') || form.querySelector('select[name="role"]') || form.querySelector("select");
 
-    // Cek ketersediaan email
+    // 3. Ambil nilai dengan aman
+    const name = nameInput ? nameInput.value.trim() : "";
+    const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
+    const password = passwordInput ? passwordInput.value.trim() : "";
+    
+    // Perbaikan untuk Select: Pastikan value diambil dengan benar
+    let roleValue = "user";
+    if (roleSelect) {
+        roleValue = roleSelect.value ? roleSelect.value.toLowerCase() : "";
+        // Jika value kosong tapi ada teks yang dipilih (misal placeholder), coba ambil dari text
+        if (!roleValue && roleSelect.selectedIndex >= 0) {
+            const selectedText = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
+            if (selectedText.includes("pemateri") || selectedText.includes("mentor")) {
+                roleValue = "mentor";
+            }
+        }
+    }
+
+    // Cek apakah mendaftar sebagai pemateri/mentor
+    const isMentor = roleValue.includes("mentor") || roleValue.includes("pemateri");
+
+    // 4. Validasi dengan pesan yang lebih spesifik (untuk debugging)
+    if (!name) {
+        showNotification("Nama Lengkap harus diisi.", "warning");
+        if (nameInput) nameInput.focus();
+        return;
+    }
+    if (!email) {
+        showNotification("Email harus diisi.", "warning");
+        if (emailInput) emailInput.focus();
+        return;
+    }
+    if (!password) {
+        showNotification("Password harus diisi.", "warning");
+        if (passwordInput) passwordInput.focus();
+        return;
+    }
+
+    // 5. Simpan ke LocalStorage
+    const users = JSON.parse(localStorage.getItem("mentorfind_users")) || [];
     const existingUser = users.find(u => u.email && u.email.toLowerCase() === email);
+
     if (existingUser) {
         showNotification("Email sudah terdaftar.", "error");
         return;
     }
 
-    // Buat data user baru
     const userId = Date.now();
     const newUser = {
         id: userId,
@@ -317,7 +387,6 @@ function handleRegister(event) {
     localStorage.setItem("mentorfind_users", JSON.stringify(users));
     localStorage.setItem("mentorfind_user", JSON.stringify(newUser));
 
-    // Jika tipe akun Pemateri, tambahkan profil awal pemateri
     if (isMentor) {
         const mentors = JSON.parse(localStorage.getItem("mentorfind_mentors")) || [];
         mentors.push({
@@ -348,7 +417,6 @@ function handleRegister(event) {
         }
     }, 800);
 }
-
 
 function handleLogin(event) {
     handleAuthSubmit(event, "login");
