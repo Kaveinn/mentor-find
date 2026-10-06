@@ -27,7 +27,6 @@
     <div class="nav-actions" id="mainNavActions">
       <a class="btn btn-ghost" href="login.html">Masuk</a>
       <a class="btn btn-primary" href="register.html">Daftar</a>
-      <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
     </div>
     <button class="mobile-menu" onclick="toggleMenu()">☰</button>
 </header>
@@ -38,6 +37,17 @@
 <main>
 <section class="section" style="padding-top: 90px; min-height: 75vh;">
     <div class="container">
+
+        <!-- BANNER: Profil belum lengkap -->
+        <div id="profileAlert" style="display: none; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 12px; padding: 16px 20px; margin-bottom: 25px;">
+            <strong style="color: #92400e;">⚠️ Profil Anda Belum Lengkap</strong>
+            <p style="margin: 8px 0 0; color: #78350f; font-size: 13px;">
+                Lengkapi profil Anda (CV, keahlian, dan nomor WhatsApp) agar muncul di halaman <strong>Cari Pemateri</strong>.
+            </p>
+            <button class="btn btn-primary" style="margin-top: 12px;" onclick="openEditProfileModal()">
+                Lengkapi Sekarang
+            </button>
+        </div>
 
         <div class="hero-content" style="max-width: 800px; margin-bottom: 40px;">
             <span class="eyebrow">DASHBOARD PEMATERI</span>
@@ -53,9 +63,10 @@
             </p>
         </div>
 
-        <!-- CARD -->
+        <!-- CARD GRID -->
         <div class="mentor-dashboard-grid">
 
+            <!-- Card 1: Profil Pemateri -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">👤</div>
                 <h3>Profil Pemateri</h3>
@@ -65,6 +76,7 @@
                 </button>
             </div>
 
+            <!-- Card 2: Kompetensi -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">🎯</div>
                 <h3>Kompetensi</h3>
@@ -75,6 +87,7 @@
                 </button>
             </div>
 
+            <!-- Card 3: Portofolio -->
             <div class="dashboard-card">
                 <div class="dashboard-icon">📁</div>
                 <h3>Portofolio</h3>
@@ -82,6 +95,16 @@
                 <button class="btn btn-ghost"
                     onclick="showNotification('Fitur portofolio akan tersedia.', 'warning')">
                     Kelola Portofolio
+                </button>
+            </div>
+
+            <!-- Card 4: EDIT PROFIL (BARU) -->
+            <div class="dashboard-card">
+                <div class="dashboard-icon">✏️</div>
+                <h3>Edit Profil & Kontak</h3>
+                <p>Lengkapi CV, keahlian, pengalaman, dan kontak WhatsApp kamu agar muncul di Cari Pemateri.</p>
+                <button class="btn btn-primary" onclick="openEditProfileModal()">
+                    Edit Profil
                 </button>
             </div>
 
@@ -112,6 +135,76 @@
         <p>© 2026 MentorFind. Platform pencarian pemateri berbasis kompetensi.</p>
     </div>
 </footer>
+
+<!-- =====================================================
+     MODAL: EDIT PROFIL PEMATERI
+     ===================================================== -->
+<div class="modal" id="editProfileModal">
+    <div class="modal-box profile-modal">
+        <button class="modal-close" onclick="closeModal('editProfileModal')">✕</button>
+
+        <span class="eyebrow">EDIT PROFIL PEMATERI</span>
+        <h2>Lengkapi Data Anda</h2>
+        <p class="muted" style="margin-bottom: 20px;">
+            Data ini akan muncul di halaman Cari Pemateri dan dapat dihubungi oleh calon pengguna.
+        </p>
+
+        <div class="form-group">
+            <label for="editRole">Bidang / Keahlian Utama</label>
+            <input type="text" id="editRole" class="input" placeholder="Contoh: Web Development">
+        </div>
+
+        <div class="form-group">
+            <label for="editLocation">Domisili</label>
+            <input type="text" id="editLocation" class="input" placeholder="Contoh: Malang">
+        </div>
+
+        <div class="form-group">
+            <label for="editCategory">Kategori</label>
+            <select id="editCategory" class="input">
+                <option value="Teknologi">Teknologi</option>
+                <option value="Desain">Desain</option>
+                <option value="Elektronika">Elektronika</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Bisnis">Bisnis</option>
+                <option value="Pendidikan">Pendidikan</option>
+                <option value="Umum">Umum</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="editExperience">Pengalaman (tahun)</label>
+            <input type="number" id="editExperience" class="input" min="0" placeholder="Contoh: 5">
+        </div>
+
+        <div class="form-group">
+            <label for="editSkills">Keahlian (pisahkan dengan koma)</label>
+            <input type="text" id="editSkills" class="input" placeholder="Contoh: JavaScript, React, Node.js">
+        </div>
+
+        <div class="form-group">
+            <label for="editDescription">Deskripsi Singkat (CV)</label>
+            <textarea id="editDescription" class="input" rows="3" placeholder="Ceritakan pengalaman dan keahlian Anda..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="editPortfolio">Portofolio</label>
+            <textarea id="editPortfolio" class="input" rows="2" placeholder="Contoh: Membangun platform e-commerce..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="editPhone">Nomor WhatsApp <span style="color: #ef4444;">*</span></label>
+            <input type="tel" id="editPhone" class="input" placeholder="Contoh: 08123456789" required>
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 4px;">
+                Format: 08xxx atau 62xxx. Akan digunakan untuk dihubungi calon pengguna.
+            </small>
+        </div>
+
+        <button class="btn btn-primary full" onclick="saveMentorProfile()">
+            Simpan Profil
+        </button>
+    </div>
+</div>
 
 <script src="script.js"></script>
 

@@ -182,15 +182,13 @@ function updateNavbar() {
     const navActions = document.getElementById("mainNavActions");
 
     if (!navLinks || !navActions) {
-        console.warn("Navbar elements not found. Pastikan id='mainNavLinks' dan id='mainNavActions' ada di HTML.");
+        console.warn("Navbar elements not found.");
         return;
     }
 
     const user = getCurrentUser();
 
-    // ====================
     // KONDISI 1: BELUM LOGIN
-    // ====================
     if (!user) {
         navLinks.innerHTML = `
             <a href="index.html" class="active">Beranda</a>
@@ -206,9 +204,7 @@ function updateNavbar() {
         return;
     }
 
-    // ====================
     // KONDISI 2: LOGIN SEBAGAI PEMATERI / MENTOR
-    // ====================
     if (user.role === "mentor" || user.isMentor === true) {
         navLinks.innerHTML = `
             <a href="index.html">Beranda</a>
@@ -231,9 +227,7 @@ function updateNavbar() {
         return;
     }
 
-    // ====================
     // KONDISI 3: LOGIN SEBAGAI USER BIASA
-    // ====================
     navLinks.innerHTML = `
         <a href="index.html" class="active">Beranda</a>
         <a href="search.html">Cari Pemateri</a>
@@ -354,6 +348,10 @@ function handleRegister(event) {
     if (!name) { showNotification("Nama Lengkap harus diisi.", "warning"); return; }
     if (!email) { showNotification("Email harus diisi.", "warning"); return; }
     if (!password) { showNotification("Password harus diisi.", "warning"); return; }
+    if (password.length < 6) {
+        showNotification("Password minimal 6 karakter.", "warning");
+        return;
+    }
 
     const users = getUsers();
     const existingUser = users.find(u => u.email && u.email.toLowerCase() === email);
@@ -369,8 +367,10 @@ function handleRegister(event) {
         name: name,
         email: email,
         password: password,
+        phone: "",
         role: isMentor ? "mentor" : "user",
-        isMentor: isMentor
+        isMentor: isMentor,
+        profileCompleted: false
     };
 
     users.push(newUser);
@@ -378,26 +378,10 @@ function handleRegister(event) {
     saveCurrentUser(newUser);
 
     if (isMentor) {
-        const mentors = getSavedMentors();
-        mentors.push({
-            id: "mentor-" + userId,
-            name: name,
-            initials: getInitials(name),
-            role: "Pemateri Baru",
-            location: "Indonesia",
-            city: "Indonesia",
-            category: "Umum",
-            exp: 1,
-            rating: 5,
-            skills: ["Pemateri"],
-            desc: "Profil pemateri terdaftar.",
-            portfolio: "Portofolio belum diisi.",
-            userId: userId
-        });
-        saveMentors(mentors);
+        showNotification("Pendaftaran berhasil! Silakan lengkapi profil Anda.", "success");
+    } else {
+        showNotification("Pendaftaran berhasil!", "success");
     }
-
-    showNotification("Pendaftaran berhasil!", "success");
 
     setTimeout(() => {
         if (isMentor) {
@@ -591,35 +575,50 @@ function renderMentors() {
 
     grid.innerHTML = "";
 
-    current.forEach(mentor => {
-        const index = mentorsData.findIndex(item => item.id === mentor.id);
-
-        grid.innerHTML += `
-            <article class="mentor-card" onclick="showProfile(${index})">
-                <div class="mentor-head">
-                    <div class="avatar avatar-sm">${mentor.initials}</div>
-                    <div class="mentor-info">
-                        <h3>${mentor.name}</h3>
-                        <p>${mentor.role}</p>
-                    </div>
-                    <span class="verified-badge">✓ Verif</span>
-                </div>
-                <div class="mentor-location">⌖ ${mentor.location}, Indonesia</div>
-                <div class="mentor-desc">${mentor.desc}</div>
-                <div class="mentor-skills">
-                    ${(mentor.skills || []).map(skill => `<span>${skill}</span>`).join("")}
-                </div>
-                <div class="mentor-meta">
-                    <span>★ ${mentor.rating}</span>
-                    <span>💼 ${mentor.exp} tahun pengalaman</span>
-                </div>
-            </article>
-        `;
+    // Filter: hanya tampilkan pemateri yang punya phone (artinya sudah lengkapi profil)
+    const validMentors = current.filter(mentor => {
+        if (mentor.userId === null || mentor.userId === undefined) return true;
+        return mentor.phone && mentor.phone.length >= 10 && mentor.role !== "Pemateri Baru";
     });
+
+    if (validMentors.length === 0) {
+        grid.innerHTML = `
+            <div class="empty">
+                <div>🔍</div>
+                <p>Belum ada pemateri yang cocok dengan kriteria Anda.</p>
+            </div>
+        `;
+    } else {
+        validMentors.forEach(mentor => {
+            const index = mentorsData.findIndex(item => item.id === mentor.id);
+
+            grid.innerHTML += `
+                <article class="mentor-card" onclick="showProfile(${index})">
+                    <div class="mentor-head">
+                        <div class="avatar avatar-sm">${mentor.initials}</div>
+                        <div class="mentor-info">
+                            <h3>${mentor.name}</h3>
+                            <p>${mentor.role}</p>
+                        </div>
+                        <span class="verified-badge">✓ Verif</span>
+                    </div>
+                    <div class="mentor-location">⌖ ${mentor.location}, Indonesia</div>
+                    <div class="mentor-desc">${mentor.desc}</div>
+                    <div class="mentor-skills">
+                        ${(mentor.skills || []).map(skill => `<span>${skill}</span>`).join("")}
+                    </div>
+                    <div class="mentor-meta">
+                        <span>★ ${mentor.rating}</span>
+                        <span>💼 ${mentor.exp} tahun pengalaman</span>
+                    </div>
+                </article>
+            `;
+        });
+    }
 
     const resultCount = document.getElementById("resultCount");
     if (resultCount) {
-        resultCount.textContent = `${current.length} pemateri ditemukan`;
+        resultCount.textContent = `${validMentors.length} pemateri ditemukan`;
     }
 }
 
@@ -641,6 +640,20 @@ function showProfile(index) {
     const profileContent = document.getElementById("profileContent");
     if (!profileContent) return;
 
+    // Format nomor WA
+    let waNumber = mentor.phone ? mentor.phone.replace(/\D/g, "") : "";
+    if (waNumber.startsWith("0")) {
+        waNumber = "62" + waNumber.substring(1);
+    }
+
+    const waMessage = encodeURIComponent(
+        `Halo ${mentor.name}, saya menemukan profil Anda di MentorFind. Saya tertarik untuk mengundang Anda sebagai pemateri.`
+    );
+
+    const waLink = waNumber
+        ? `https://wa.me/${waNumber}?text=${waMessage}`
+        : "#";
+
     profileContent.innerHTML = `
         <div class="profile-detail">
             <div class="avatar">${mentor.initials}</div>
@@ -660,6 +673,20 @@ function showProfile(index) {
         <div class="portfolio">
             <h4>Portofolio</h4>
             <p>${mentor.portfolio}</p>
+        </div>
+
+        <div class="contact-section">
+            <h4>Hubungi Pemateri</h4>
+            <p class="muted">Diskusikan kebutuhan acara Anda langsung dengan pemateri.</p>
+            ${waNumber ? `
+                <a class="btn btn-primary full btn-wa" href="${waLink}" target="_blank" rel="noopener">
+                    💬 Hubungi via WhatsApp
+                </a>
+            ` : `
+                <p class="muted" style="text-align:center; padding: 10px; background: #f5f5fa; border-radius: 8px;">
+                    Nomor WhatsApp belum tersedia.
+                </p>
+            `}
         </div>
     `;
 
@@ -705,7 +732,6 @@ function toggleMenu() {
     }
 }
 
-// Tutup menu mobile saat link diklik
 document.addEventListener("click", function (event) {
     const navLinks = document.querySelector(".nav-links");
     if (!navLinks) return;
@@ -720,7 +746,6 @@ document.addEventListener("click", function (event) {
     }
 });
 
-// Tutup menu mobile saat layar diperbesar ke desktop
 window.addEventListener("resize", function () {
     if (window.innerWidth > 900) {
         const navLinks = document.querySelector(".nav-links");
@@ -749,21 +774,154 @@ function handlePopularClick(keyword) {
 }
 
 // =====================================================
+// FUNGSI EDIT PROFIL PEMATERI
+// =====================================================
+function openEditProfileModal() {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
+        return;
+    }
+
+    const mentors = getSavedMentors();
+    const mentor = mentors.find(item => item.userId === user.id);
+
+    if (mentor) {
+        document.getElementById("editRole").value = mentor.role || "";
+        document.getElementById("editLocation").value = mentor.location || "";
+        document.getElementById("editCategory").value = mentor.category || "Umum";
+        document.getElementById("editExperience").value = mentor.exp || 0;
+        document.getElementById("editSkills").value = (mentor.skills || []).join(", ");
+        document.getElementById("editDescription").value = mentor.desc || "";
+        document.getElementById("editPortfolio").value = mentor.portfolio || "";
+        document.getElementById("editPhone").value = mentor.phone || user.phone || "";
+    } else {
+        document.getElementById("editPhone").value = user.phone || "";
+    }
+
+    openModal("editProfileModal");
+}
+
+function saveMentorProfile() {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
+        return;
+    }
+
+    const role = document.getElementById("editRole").value.trim();
+    const location = document.getElementById("editLocation").value.trim();
+    const category = document.getElementById("editCategory").value;
+    const experience = Number(document.getElementById("editExperience").value) || 0;
+    const skillsStr = document.getElementById("editSkills").value.trim();
+    const description = document.getElementById("editDescription").value.trim();
+    const portfolio = document.getElementById("editPortfolio").value.trim();
+    const phone = document.getElementById("editPhone").value.trim();
+
+    if (!role) { showNotification("Bidang keahlian wajib diisi.", "warning"); return; }
+    if (!location) { showNotification("Domisili wajib diisi.", "warning"); return; }
+    if (!phone) { showNotification("Nomor WhatsApp wajib diisi.", "warning"); return; }
+    if (!description) { showNotification("Deskripsi/CV wajib diisi.", "warning"); return; }
+    if (!skillsStr) { showNotification("Minimal isi 1 keahlian.", "warning"); return; }
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+        showNotification("Format nomor WA tidak valid (10-15 digit).", "warning");
+        return;
+    }
+
+    const skills = skillsStr
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    user.phone = phone;
+    user.profileCompleted = true;
+    saveCurrentUser(user);
+
+    const users = getUsers();
+    const userIndex = users.findIndex(u => u.id === user.id);
+    if (userIndex !== -1) {
+        users[userIndex].phone = phone;
+        users[userIndex].profileCompleted = true;
+        saveUsers(users);
+    }
+
+    const mentors = getSavedMentors();
+    const mentorIndex = mentors.findIndex(item => item.userId === user.id);
+
+    const mentorData = {
+        id: mentorIndex !== -1 ? mentors[mentorIndex].id : "mentor-" + Date.now(),
+        name: user.name,
+        initials: getInitials(user.name),
+        role: role,
+        location: location,
+        city: location,
+        category: category,
+        exp: experience,
+        rating: 5,
+        skills: skills,
+        desc: description,
+        portfolio: portfolio || "Portofolio belum diisi.",
+        phone: phone,
+        userId: user.id
+    };
+
+    if (mentorIndex !== -1) {
+        mentors[mentorIndex] = mentorData;
+    } else {
+        mentors.push(mentorData);
+    }
+
+    saveMentors(mentors);
+
+    showNotification("Profil berhasil disimpan! Anda kini muncul di Cari Pemateri.", "success");
+
+    setTimeout(() => {
+        closeModal("editProfileModal");
+        mentorsData = getAllMentors();
+        current = [...mentorsData];
+    }, 1200);
+}
+
+// =====================================================
 // DOMCONTENTLOADED
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
+    // Proteksi halaman
     protectPages();
+
+    // Update navbar
     updateNavbar();
 
-    // Khusus halaman mentor-dashboard.html: isi nama pemateri
+    // ==========================================
+    // Khusus halaman mentor-dashboard.html
+    // ==========================================
     if (document.getElementById("mentorName")) {
         const user = getCurrentUser();
         if (user) {
+            // Isi nama pemateri
             document.getElementById("mentorName").textContent = user.name;
+
+            // Cek apakah profil sudah lengkap
+            const mentors = getSavedMentors();
+            const mentor = mentors.find(m => m.userId === user.id);
+
+            const profileAlert = document.getElementById("profileAlert");
+            if (profileAlert) {
+                // Tampilkan alert jika belum ada data mentor atau phone kosong
+                if (!mentor || !mentor.phone || mentor.role === "Pemateri Baru") {
+                    profileAlert.style.display = "block";
+                } else {
+                    profileAlert.style.display = "none";
+                }
+            }
         }
     }
 
-    // Render mentor jika ada grid
+    // ==========================================
+    // Khusus halaman search.html
+    // ==========================================
     if (document.getElementById("mentorGrid")) {
         const user = getCurrentUser();
         if (!user || (user.role !== "mentor" && user.isMentor !== true)) {
@@ -785,7 +943,7 @@ function showMentorProfile() {
     const mentor = mentors.find(item => item.userId === user.id);
 
     if (!mentor) {
-        showNotification("Data profil pemateri tidak ditemukan.", "error");
+        showNotification("Data profil pemateri tidak ditemukan. Silakan isi profil terlebih dahulu.", "warning");
         return;
     }
 

@@ -81,7 +81,6 @@ a {
   color: var(--primary);
 }
 
-/* Menu Tengah */
 .nav-links {
   display: flex;
   gap: 30px;
@@ -99,14 +98,12 @@ a {
   color: var(--primary);
 }
 
-/* Menu Kanan */
 .nav-actions {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-/* Profil User di Navbar */
 .user-profile {
   display: flex;
   align-items: center;
@@ -990,6 +987,78 @@ footer p {
 }
 
 /* =====================================================
+   CONTACT SECTION (di Modal Profil Pemateri)
+===================================================== */
+
+.contact-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.contact-section h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.contact-section p {
+  margin-bottom: 15px;
+}
+
+.contact-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-wa {
+  background: #25D366 !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3) !important;
+  text-align: center;
+  padding: 14px 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-wa:hover {
+  background: #1DAF57 !important;
+  transform: translateY(-1px);
+}
+
+/* =====================================================
+   FORM DI DALAM MODAL (Edit Profil)
+===================================================== */
+
+.modal-box textarea.input {
+  resize: vertical;
+  min-height: 70px;
+  font-family: inherit;
+}
+
+.modal-box .form-group {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.modal-box .form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.modal-box .form-group small {
+  display: block;
+  margin-top: 4px;
+}
+
+/* =====================================================
    MENTOR DASHBOARD
 ===================================================== */
 
@@ -1056,6 +1125,91 @@ footer p {
   max-width: 700px;
   color: #64748b;
   line-height: 1.7;
+}
+
+/* =====================================================
+   NOTIFICATION POPUP
+===================================================== */
+
+#notificationContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 340px;
+  pointer-events: none;
+}
+
+.notification {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-left: 4px solid var(--primary);
+  pointer-events: auto;
+  animation: slideIn 0.3s ease;
+  font-size: 13px;
+}
+
+.notification.success { border-left-color: #18a66a; }
+.notification.error { border-left-color: #ef4444; }
+.notification.warning { border-left-color: #f59e0b; }
+
+.notification-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: #eeeeff;
+  color: var(--primary);
+}
+
+.notification.success .notification-icon { background: #e8faf2; color: #18a66a; }
+.notification.error .notification-icon { background: #fee2e2; color: #ef4444; }
+.notification.warning .notification-icon { background: #fef3c7; color: #f59e0b; }
+
+.notification-content {
+  flex: 1;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #999;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.notification.hide {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: 0.3s;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* =====================================================
@@ -1143,7 +1297,8 @@ body.auth-page {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid #e2e8f0;
@@ -1153,10 +1308,12 @@ body.auth-page {
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s, background-color 0.2s;
+  font-family: inherit;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: #4f46e5;
   background-color: #fff;
 }
@@ -1220,12 +1377,10 @@ body.auth-page {
 ========================= */
 
 @media (max-width: 900px) {
-  /* Sembunyikan menu desktop */
   .nav-links {
     display: none;
   }
 
-  /* Tampilkan tombol hamburger */
   .mobile-menu {
     display: block;
     background: none;
@@ -1236,7 +1391,6 @@ body.auth-page {
     padding: 8px;
   }
 
-  /* Menu Mobile Aktif — ini yang membuat menu muncul saat diklik */
   .nav-links.active {
     display: flex !important;
     flex-direction: column;
@@ -1327,8 +1481,9 @@ body.auth-page {
     grid-template-columns: 1fr 1fr;
   }
 
+  /* Mentor Dashboard jadi 2 kolom di tablet */
   .mentor-dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -1424,7 +1579,7 @@ body.auth-page {
     font-size: 22px;
   }
 
-  /* Navbar Mobile — sesuaikan ukuran */
+  /* Navbar Mobile */
   .navbar {
     padding: 0 5%;
     height: 68px;
@@ -1452,5 +1607,33 @@ body.auth-page {
     width: 32px;
     height: 32px;
     font-size: 12px;
+  }
+
+  /* Mentor Dashboard jadi 1 kolom di HP */
+  .mentor-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Modal di HP */
+  .modal-box {
+    padding: 24px 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-box h2 {
+    font-size: 20px;
+  }
+
+  .contact-buttons {
+    flex-direction: column;
+  }
+
+  /* Notifikasi di HP */
+  #notificationContainer {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
   }
 }
