@@ -12,18 +12,23 @@
 <body>
 
   <!-- Navbar Header -->
-  <header class="navbar">
+<header class="navbar">
     <a class="brand" href="index.html">
       <span class="brand-mark">M</span><span>Mentor<span class="brand-accent">Find</span></span>
     </a>
-    <ul class="nav-links">
-      <li><a href="index.html">Beranda</a></li>
-      <li><a href="search.html">Cari Pemateri</a></li>
-      <li><a href="how-it-works.html">Cara Kerja</a></li>
-      <li><a href="about.html">Tentang</a></li>
-    </ul>
-    <div class="nav-actions"></div>
-  </header>
+    <nav class="nav-links" id="mainNavLinks">
+      <a href="index.html" class="active">Beranda</a>
+      <a href="search.html">Cari Pemateri</a>
+      <a href="how-it-works.html">Cara Kerja</a>
+      <a href="about.html">Tentang</a>
+    </nav>
+    <div class="nav-actions" id="mainNavActions">
+      <a class="btn btn-ghost" href="login.html">Masuk</a>
+      <a class="btn btn-primary" href="register.html">Daftar</a>
+      <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
+    </div>
+    <button class="mobile-menu" onclick="toggleMenu()">☰</button>
+</header>
 
   <!-- Konten Profil -->
   <main style="max-width: 800px; margin: 40px auto; padding: 0 20px;">

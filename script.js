@@ -1,3 +1,6 @@
+// =====================================================
+// DATA DEFAULT MENTORS
+// =====================================================
 const defaultMentors = [
     {
         id: "mentor-001",
@@ -91,6 +94,9 @@ const defaultMentors = [
     }
 ];
 
+// =====================================================
+// FUNGSI LOCAL STORAGE
+// =====================================================
 function getUsers() {
     return JSON.parse(localStorage.getItem("mentorfind_users")) || [];
 }
@@ -125,7 +131,6 @@ function getAllMentors() {
 
 function getInitials(name) {
     if (!name) return "U";
-
     return name
         .split(" ")
         .map(word => word.charAt(0))
@@ -134,6 +139,9 @@ function getInitials(name) {
         .toUpperCase();
 }
 
+// =====================================================
+// FUNGSI NOTIFIKASI
+// =====================================================
 function showNotification(message, type = "success") {
     let container = document.getElementById("notificationContainer");
 
@@ -166,24 +174,31 @@ function showNotification(message, type = "success") {
     }, 3500);
 }
 
+// =====================================================
+// FUNGSI UPDATE NAVBAR (INI YANG PENTING)
+// =====================================================
 function updateNavbar() {
-    const navLinks = document.getElementById("mainNavLinks");   // Menu Tengah
-    const navActions = document.getElementById("mainNavActions"); // Menu Kanan
-    
-    if (!navLinks || !navActions) return;
+    const navLinks = document.getElementById("mainNavLinks");
+    const navActions = document.getElementById("mainNavActions");
+
+    if (!navLinks || !navActions) {
+        console.warn("Navbar elements not found. Pastikan id='mainNavLinks' dan id='mainNavActions' ada di HTML.");
+        return;
+    }
 
     const user = getCurrentUser();
 
-    // 1. JIKA BELUM LOGIN
+    // ====================
+    // KONDISI 1: BELUM LOGIN
+    // ====================
     if (!user) {
-        // Kembalikan menu default
         navLinks.innerHTML = `
             <a href="index.html" class="active">Beranda</a>
             <a href="search.html">Cari Pemateri</a>
             <a href="how-it-works.html">Cara Kerja</a>
             <a href="about.html">Tentang</a>
         `;
-        
+
         navActions.innerHTML = `
             <a class="btn btn-ghost" href="login.html">Masuk</a>
             <a class="btn btn-primary" href="register.html">Daftar</a>
@@ -192,9 +207,11 @@ function updateNavbar() {
         return;
     }
 
-    // 2. JIKA LOGIN SEBAGAI PEMATERI / MENTOR
+    // ====================
+    // KONDISI 2: LOGIN SEBAGAI PEMATERI / MENTOR
+    // ====================
     if (user.role === "mentor" || user.isMentor === true) {
-        // Sisipkan "Dashboard Pemateri" TEPAT SETELAH "Beranda"
+        // Menu Tengah: Dashboard Pemateri disisipkan SETELAH Beranda
         navLinks.innerHTML = `
             <a href="index.html">Beranda</a>
             <a href="mentor-dashboard.html" class="active">Dashboard Pemateri</a>
@@ -203,7 +220,7 @@ function updateNavbar() {
             <a href="about.html">Tentang</a>
         `;
 
-        // Menu Kanan HANYA berisi Profil dan Tombol Keluar
+        // Menu Kanan: HANYA Profil dan Tombol Keluar
         navActions.innerHTML = `
             <div class="user-profile">
                 <div class="user-avatar">${getInitials(user.name)}</div>
@@ -217,7 +234,9 @@ function updateNavbar() {
         return;
     }
 
-    // 3. JIKA LOGIN SEBAGAI USER BIASA
+    // ====================
+    // KONDISI 3: LOGIN SEBAGAI USER BIASA
+    // ====================
     navLinks.innerHTML = `
         <a href="index.html" class="active">Beranda</a>
         <a href="search.html">Cari Pemateri</a>
@@ -238,7 +257,9 @@ function updateNavbar() {
     `;
 }
 
-
+// =====================================================
+// FUNGSI AUTH (LOGIN & REGISTER)
+// =====================================================
 function handleAuthSubmit(event, type) {
     if (event) event.preventDefault();
 
@@ -298,44 +319,32 @@ function handleAuthSubmit(event, type) {
 function handleRegister(event) {
     if (event) event.preventDefault();
 
-    // 1. Ambil form dengan cara yang lebih aman
     let form = null;
     if (event && event.target) {
         if (event.target.tagName === "FORM") {
             form = event.target;
         } else {
-            // Jika yang diklik adalah tombol, cari form terdekat
             form = event.target.closest("form");
         }
     }
-    
-    // Fallback jika form tidak ditemukan
-    if (!form) {
-        form = document.querySelector("form");
-    }
-
+    if (!form) form = document.querySelector("form");
     if (!form) {
         showNotification("Formulir tidak ditemukan!", "error");
         return;
     }
 
-    // 2. Ambil elemen input berdasarkan ID atau NAME (lebih akurat daripada type)
-    // Sesuaikan ID ini dengan yang ada di HTML Anda
     const nameInput = form.querySelector('#registerName') || form.querySelector('input[name="name"]') || form.querySelector('input[type="text"]');
     const emailInput = form.querySelector('#registerEmail') || form.querySelector('input[name="email"]') || form.querySelector('input[type="email"]');
     const passwordInput = form.querySelector('#registerPassword') || form.querySelector('input[name="password"]') || form.querySelector('input[type="password"]');
     const roleSelect = form.querySelector('#registerRole') || form.querySelector('select[name="role"]') || form.querySelector("select");
 
-    // 3. Ambil nilai dengan aman
     const name = nameInput ? nameInput.value.trim() : "";
     const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
     const password = passwordInput ? passwordInput.value.trim() : "";
-    
-    // Perbaikan untuk Select: Pastikan value diambil dengan benar
+
     let roleValue = "user";
     if (roleSelect) {
         roleValue = roleSelect.value ? roleSelect.value.toLowerCase() : "";
-        // Jika value kosong tapi ada teks yang dipilih (misal placeholder), coba ambil dari text
         if (!roleValue && roleSelect.selectedIndex >= 0) {
             const selectedText = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
             if (selectedText.includes("pemateri") || selectedText.includes("mentor")) {
@@ -344,28 +353,13 @@ function handleRegister(event) {
         }
     }
 
-    // Cek apakah mendaftar sebagai pemateri/mentor
     const isMentor = roleValue.includes("mentor") || roleValue.includes("pemateri");
 
-    // 4. Validasi dengan pesan yang lebih spesifik (untuk debugging)
-    if (!name) {
-        showNotification("Nama Lengkap harus diisi.", "warning");
-        if (nameInput) nameInput.focus();
-        return;
-    }
-    if (!email) {
-        showNotification("Email harus diisi.", "warning");
-        if (emailInput) emailInput.focus();
-        return;
-    }
-    if (!password) {
-        showNotification("Password harus diisi.", "warning");
-        if (passwordInput) passwordInput.focus();
-        return;
-    }
+    if (!name) { showNotification("Nama Lengkap harus diisi.", "warning"); return; }
+    if (!email) { showNotification("Email harus diisi.", "warning"); return; }
+    if (!password) { showNotification("Password harus diisi.", "warning"); return; }
 
-    // 5. Simpan ke LocalStorage
-    const users = JSON.parse(localStorage.getItem("mentorfind_users")) || [];
+    const users = getUsers();
     const existingUser = users.find(u => u.email && u.email.toLowerCase() === email);
 
     if (existingUser) {
@@ -384,15 +378,15 @@ function handleRegister(event) {
     };
 
     users.push(newUser);
-    localStorage.setItem("mentorfind_users", JSON.stringify(users));
-    localStorage.setItem("mentorfind_user", JSON.stringify(newUser));
+    saveUsers(users);
+    saveCurrentUser(newUser);
 
     if (isMentor) {
-        const mentors = JSON.parse(localStorage.getItem("mentorfind_mentors")) || [];
+        const mentors = getSavedMentors();
         mentors.push({
             id: "mentor-" + userId,
             name: name,
-            initials: name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase(),
+            initials: getInitials(name),
             role: "Pemateri Baru",
             location: "Indonesia",
             city: "Indonesia",
@@ -404,7 +398,7 @@ function handleRegister(event) {
             portfolio: "Portofolio belum diisi.",
             userId: userId
         });
-        localStorage.setItem("mentorfind_mentors", JSON.stringify(mentors));
+        saveMentors(mentors);
     }
 
     showNotification("Pendaftaran berhasil!", "success");
@@ -432,6 +426,9 @@ function handleLogout() {
     logout();
 }
 
+// =====================================================
+// FUNGSI PROTEKSI HALAMAN
+// =====================================================
 function protectPages() {
     const path = window.location.pathname.toLowerCase();
 
@@ -440,14 +437,18 @@ function protectPages() {
     const isSearchPage = path.includes("search.html");
     const isBecomeMentorPage = path.includes("become-mentor.html");
     const isDashboardPage = path.includes("mentor-dashboard.html");
+    const isHowItWorksPage = path.includes("how-it-works.html");
+    const isAboutPage = path.includes("about.html");
 
     const user = getCurrentUser();
 
+    // Halaman yang MEMBUTUHKAN login: search, become-mentor, dashboard
     if ((isSearchPage || isBecomeMentorPage || isDashboardPage) && !user) {
         window.location.href = "login.html";
         return;
     }
 
+    // Halaman dashboard hanya untuk mentor
     if (isDashboardPage && user) {
         const isUserMentor = user.role === "mentor" || user.isMentor === true;
         if (!isUserMentor) {
@@ -456,40 +457,37 @@ function protectPages() {
         }
     }
 
+    // Halaman login/register: jika sudah login, redirect ke halaman sesuai role
     if ((isLoginPage || isRegisterPage) && user) {
         if (user.role === "mentor" || user.isMentor === true) {
             window.location.href = "mentor-dashboard.html";
         } else {
             window.location.href = "index.html";
         }
+        return;
     }
+
+    // Halaman how-it-works dan about: TIDAK butuh login, jadi tidak ada redirect
+    // Halaman index: TIDAK butuh login
 }
 
 function protectSearchPage() {
-    if (!isAuthenticated()) {
-        window.location.href = "login.html";
-    }
+    if (!isAuthenticated()) window.location.href = "login.html";
 }
 
 function protectBecomeMentorPage() {
-    if (!isAuthenticated()) {
-        window.location.href = "login.html";
-    }
+    if (!isAuthenticated()) window.location.href = "login.html";
 }
 
 function protectMentorDashboard() {
     const user = getCurrentUser();
-
-    if (!user) {
-        window.location.href = "login.html";
-        return;
-    }
-
-    if (user.role !== "mentor" && user.isMentor !== true) {
-        window.location.href = "index.html";
-    }
+    if (!user) { window.location.href = "login.html"; return; }
+    if (user.role !== "mentor" && user.isMentor !== true) window.location.href = "index.html";
 }
 
+// =====================================================
+// FUNGSI MENTOR SUBMIT
+// =====================================================
 function handleMentorSubmit(event) {
     if (event) event.preventDefault();
 
@@ -549,6 +547,9 @@ function handleMentorSubmit(event) {
     }, 700);
 }
 
+// =====================================================
+// FUNGSI FILTER & RENDER MENTOR
+// =====================================================
 function applyFilters() {
     const keyword = document.getElementById("searchKeyword")?.value.trim().toLowerCase() || "";
     const location = document.getElementById("filterLocation")?.value || "";
@@ -677,6 +678,9 @@ function showProfile(index) {
     openModal("profileModal");
 }
 
+// =====================================================
+// FUNGSI MODAL & MENU
+// =====================================================
 function openModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
@@ -697,26 +701,11 @@ function switchModal(closeId, openId) {
 }
 
 function toggleMenu() {
-    const nav = document.querySelector("nav");
+    const nav = document.querySelector(".nav-links");
     const menuButton = document.querySelector(".mobile-menu");
     if (!nav) return;
 
     const isOpen = nav.classList.toggle("active");
-
-    if (isOpen) {
-        nav.style.display = "flex";
-        nav.style.flexDirection = "column";
-        nav.style.position = "absolute";
-        nav.style.top = "70px";
-        nav.style.left = "0";
-        nav.style.width = "100%";
-        nav.style.background = "#ffffff";
-        nav.style.padding = "20px";
-        nav.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
-        nav.style.zIndex = "999";
-    } else {
-        nav.style.display = "";
-    }
 
     if (menuButton) {
         menuButton.setAttribute("aria-expanded", String(isOpen));
@@ -724,9 +713,27 @@ function toggleMenu() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const navbar = document.querySelector(".navbar");
+// =====================================================
+// FUNGSI HERO SEARCH
+// =====================================================
+function handleHeroSearch(event) {
+    const keyword = document.getElementById("heroKeyword")?.value.trim() || "";
+    const location = document.getElementById("heroLocation")?.value.trim() || "";
+    const url = `search.html?q=${encodeURIComponent(keyword)}&loc=${encodeURIComponent(location)}`;
+    window.location.href = url;
+    return false;
+}
 
+function handlePopularClick(keyword) {
+    window.location.href = `search.html?q=${encodeURIComponent(keyword)}`;
+}
+
+// =====================================================
+// DOMCONTENTLOADED (INI YANG MENJALANKAN SEMUANYA)
+// =====================================================
+document.addEventListener("DOMContentLoaded", () => {
+    // Tambahkan tombol mobile menu jika belum ada
+    const navbar = document.querySelector(".navbar");
     if (navbar && !navbar.querySelector(".mobile-menu")) {
         const menuButton = document.createElement("button");
         menuButton.className = "mobile-menu";
@@ -740,9 +747,11 @@ document.addEventListener("DOMContentLoaded", () => {
         navbar.querySelector(".mobile-menu").addEventListener("click", toggleMenu);
     }
 
+    // Jalankan proteksi halaman dan update navbar
     protectPages();
-    updateNavbar();
+    updateNavbar(); // <--- INI YANG MEMBUAT NAVBAR BERUBAH
 
+    // Render mentor jika ada grid
     if (document.getElementById("mentorGrid")) {
         const user = getCurrentUser();
         if (!user || (user.role !== "mentor" && user.isMentor !== true)) {
