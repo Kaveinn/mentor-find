@@ -1,51 +1,66 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar — BICARA</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar — BICARA</title>
+    <!-- Link CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
+<!-- KUNCI UTAMA: class="auth-page" -->
 <body class="auth-page">
 
-  <div class="auth-card">
-    <a href="index.html" class="close-btn">✕</a>
-    
-    <div class="auth-header">
-      <h2>Sign Up</h2>
-      <p>Buat akun baru untuk terhubung dengan pemateri</p>
+    <div class="auth-card">
+        <!-- Tombol Close -->
+        <a href="index.html" class="close-btn" title="Tutup">✕</a>
+
+        <div class="auth-header">
+            <a class="brand" href="index.html">
+                <span class="brand-mark">B</span>
+                <span>BICARA</span>
+            </a>
+            <h2>Sign Up</h2>
+            <p>Buat akun baru untuk terhubung dengan pemateri</p>
+        </div>
+
+        <form onsubmit="handleRegister(event)" id="registerForm">
+            <div class="form-group">
+                <label for="registerName">Nama Lengkap</label>
+                <input type="text" id="registerName" name="name" placeholder="Nama Lengkap" required>
+            </div>
+
+            <div class="form-group">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" name="email" placeholder="Email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="registerRole">Tipe Akun</label>
+                <select id="registerRole" name="role" required>
+                    <option value="">-- Pilih Tipe Akun --</option>
+                    <option value="user">Pengguna</option>
+                    <option value="pemateri">Pemateri</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" name="password" placeholder="Minimal 6 karakter" required>
+            </div>
+
+            <button type="submit" class="btn-auth">Buat Akun</button>
+
+            <div class="auth-footer">
+                Sudah punya akun? <a href="login.html">Masuk</a>
+            </div>
+        </form>
     </div>
 
-<form id="registerForm" onsubmit="handleRegister(event)">
-    <!-- Input Nama -->
-    <input type="text" id="registerName" name="name" placeholder="Nama Lengkap" required>
-    
-    <!-- Input Email -->
-    <input type="email" id="registerEmail" name="email" placeholder="Email" required>
-    
-    <!-- Select Tipe Akun -->
-    <select id="registerRole" name="role" required>
-        <option value="">-- Pilih Tipe Akun --</option>
-        <option value="user">Pengguna</option>
-        <option value="pemateri">Pemateri</option>
-    </select>
-    
-    <!-- Input Password -->
-    <input type="password" id="registerPassword" name="password" placeholder="Password" required>
-    
-    <button type="submit">Buat Akun</button>
-</form>
-
-    <div id="registerAlert"></div>
-
-    <div class="auth-footer">
-      Sudah punya akun? <a href="login.html">Masuk</a>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
