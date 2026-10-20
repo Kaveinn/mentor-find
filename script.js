@@ -95,7 +95,7 @@ const defaultMentors = [
 ];
 
 // =====================================================
-// FUNGSI LOCAL STORAGE (DIUBAH KE "BICARA")
+// FUNGSI LOCAL STORAGE (BICARA)
 // =====================================================
 function getUsers() {
     return JSON.parse(localStorage.getItem("bicara_users")) || [];
@@ -182,8 +182,7 @@ function updateNavbar() {
     const navActions = document.getElementById("mainNavActions");
 
     if (!navLinks || !navActions) {
-        console.warn("Navbar elements not found.");
-        return;
+        return; // Diperbaiki: tidak console.warn agar tidak merah di console
     }
 
     const user = getCurrentUser();
@@ -396,6 +395,8 @@ function handleLogin(event) {
 function logout() {
     localStorage.removeItem("bicara_user");
     localStorage.removeItem("bicara_active_user");
+    // Pastikan scroll normal saat logout
+    document.body.style.overflow = "";
     window.location.href = "index.html";
 }
 
@@ -492,12 +493,8 @@ function renderMentors() {
 
     grid.innerHTML = "";
 
-    // Filter: HANYA tampilkan pemateri yang phone-nya sudah diisi (profil lengkap)
     const validMentors = current.filter(mentor => {
-        // Pemateri default selalu tampil
         if (mentor.userId === null || mentor.userId === undefined) return true;
-        
-        // Pemateri baru: HANYA tampil jika nomor WA sudah diisi (min 10 digit)
         return mentor.phone && mentor.phone.length >= 10;
     });
 
@@ -627,20 +624,20 @@ function showProfile(index) {
 }
 
 // =====================================================
-// FUNGSI MODAL & MENU
+// FUNGSI MODAL & MENU (DIPERBAIKI UNTUK SCROLL MOBILE)
 // =====================================================
 function openModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.add("show");
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden"; // Kunci scroll saat modal buka
 }
 
 function closeModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.remove("show");
-    document.body.style.overflow = "";
+    document.body.style.overflow = ""; // Buka kunci scroll saat modal tutup
 }
 
 function toggleMenu() {
@@ -672,6 +669,7 @@ document.addEventListener("click", function (event) {
 });
 
 window.addEventListener("resize", function () {
+    // Tutup menu mobile jika layar diperbesar
     if (window.innerWidth > 900) {
         const navLinks = document.querySelector(".nav-links");
         const menuButton = document.querySelector(".mobile-menu");
@@ -680,6 +678,12 @@ window.addEventListener("resize", function () {
             menuButton.setAttribute("aria-expanded", "false");
             menuButton.innerHTML = "☰";
         }
+    }
+
+    // PENTING: Pastikan scroll body kembali normal saat resize
+    const openModal = document.querySelector(".modal.show");
+    if (!openModal) {
+        document.body.style.overflow = ""; 
     }
 });
 
@@ -982,6 +986,9 @@ function savePortfolio() {
 // DOMCONTENTLOADED
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
+    // Pastikan scroll normal saat halaman pertama kali dibuka
+    document.body.style.overflow = "";
+
     protectPages();
     updateNavbar();
 
@@ -1032,5 +1039,7 @@ function showMentorProfile() {
 window.addEventListener("click", event => {
     if (event.target.classList.contains("modal")) {
         closeModal(event.target.id);
+        // Pastikan scroll kembali normal saat modal ditutup via background
+        document.body.style.overflow = "";
     }
 });
