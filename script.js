@@ -140,41 +140,54 @@ function getInitials(name) {
 }
 
 // =====================================================
-// FUNGSI STATISTIK REAL-TIME (BARU)
+// FUNGSI CEK KELENGKAPAN PROFIL (HELPER)
+// =====================================================
+function isMentorProfileComplete(mentor) {
+    if (!mentor) return false;
+    
+    // Pemateri default (bawaan sistem) dianggap selalu lengkap
+    if (mentor.userId === null || mentor.userId === undefined) return true;
+
+    const hasPhone = mentor.phone && mentor.phone.length >= 10;
+    const hasSkills = mentor.skills && mentor.skills.length > 0;
+    const hasCV = mentor.cv && mentor.cv !== "";
+    const hasPortfolio = mentor.portfolio && mentor.portfolio !== "Portofolio belum diisi.";
+    const hasRole = mentor.role && mentor.role !== "Pemateri Baru" && mentor.role !== "";
+
+    return hasPhone && hasSkills && hasCV && hasPortfolio && hasRole;
+}
+
+// =====================================================
+// FUNGSI STATISTIK REAL-TIME
 // =====================================================
 function updateStatistics() {
-    // 1. Ambil semua data mentor
     const allMentors = getAllMentors();
 
-    // 2. Hitung Total Pemateri
-    const totalMentors = allMentors.length;
+    // Filter dulu: Hanya hitung pemateri yang profilnya LENGKAP
+    const validMentors = allMentors.filter(mentor => isMentorProfileComplete(mentor));
+
+    const totalMentors = validMentors.length;
     
-    // 3. Hitung Bidang Kompetensi (dari array skills)
     const allSkills = new Set();
-    allMentors.forEach(mentor => {
+    validMentors.forEach(mentor => {
         (mentor.skills || []).forEach(skill => {
-            if (skill && skill.trim() !== "") {
-                allSkills.add(skill.toLowerCase().trim());
-            }
+            if (skill && skill.trim() !== "") allSkills.add(skill.toLowerCase().trim());
         });
     });
     const totalSkills = allSkills.size;
 
-    // 4. Hitung Kota & Kabupaten (dari property location/city)
     const allLocations = new Set();
-    allMentors.forEach(mentor => {
+    validMentors.forEach(mentor => {
         if (mentor.location) allLocations.add(mentor.location.toLowerCase().trim());
     });
     const totalLocations = allLocations.size;
 
-    // 5. Hitung Rating Rata-rata
     let totalRating = 0;
-    allMentors.forEach(mentor => {
+    validMentors.forEach(mentor => {
         totalRating += (mentor.rating || 0);
     });
     const avgRating = totalMentors > 0 ? (totalRating / totalMentors) : 0;
 
-    // 6. Tampilkan ke HTML
     const elMentors = document.getElementById("statMentors");
     if (elMentors) elMentors.textContent = `${totalMentors}+`;
 
@@ -496,6 +509,9 @@ function applyFilters() {
     const mentors = getAllMentors();
 
     const result = mentors.filter(mentor => {
+        // HANYA masukkan mentor yang profilnya LENGKAP
+        if (!isMentorProfileComplete(mentor)) return false;
+
         const searchText = [
             mentor.name,
             mentor.role,
@@ -539,10 +555,8 @@ function renderMentors() {
 
     grid.innerHTML = "";
 
-    const validMentors = current.filter(mentor => {
-        if (mentor.userId === null || mentor.userId === undefined) return true;
-        return mentor.phone && mentor.phone.length >= 10;
-    });
+    // Filter final: Gunakan helper isMentorProfileComplete
+    const validMentors = current.filter(mentor => isMentorProfileComplete(mentor));
 
     if (validMentors.length === 0) {
         grid.innerHTML = `
@@ -821,15 +835,20 @@ function saveMentorProfile() {
     }
 
     saveMentors(mentors);
-    showNotification("Profil berhasil disimpan! Anda kini muncul di Cari Pemateri.", "success");
+    showNotification("Profil berhasil disimpan!", "success");
     
     // Update statistik real-time
     updateStatistics();
 
     setTimeout(() => {
         closeModal("editProfileModal");
+        // Cek ulang apakah warning harus disembunyikan
         const profileAlert = document.getElementById("profileAlert");
-        if (profileAlert) profileAlert.style.display = "none";
+        if (profileAlert) {
+            const updatedMentor = mentors.find(m => m.userId === user.id);
+            const isComplete = isMentorProfileComplete(updatedMentor);
+            profileAlert.style.display = isComplete ? "none" : "block";
+        }
         mentorsData = getAllMentors();
         current = [...mentorsData];
     }, 1200);
@@ -915,8 +934,17 @@ function saveSkills() {
     
     // Update statistik real-time
     updateStatistics();
-    
-    setTimeout(() => closeModal("skillsModal"), 1000);
+
+    setTimeout(() => {
+        closeModal("skillsModal");
+        // Cek ulang status warning
+        const profileAlert = document.getElementById("profileAlert");
+        if (profileAlert) {
+            const updatedMentor = mentors.find(m => m.userId === user.id);
+            const isComplete = isMentorProfileComplete(updatedMentor);
+            profileAlert.style.display = isComplete ? "none" : "block";
+        }
+    }, 1000);
 }
 
 function openPortfolioModal() {
@@ -1002,8 +1030,21 @@ function savePortfolio() {
         if (desc) mentor.portfolio = desc;
 
         saveMentors(mentors);
-        showNotification("Portofolio berhasil disimpan!", "success");
-        setTimeout(() => closeModal("portfolioModal"), 1000);
+        showNotification("Portofolio & CV berhasil disimpan!", "success");
+        
+        // Update statistik real-time
+        updateStatistics();
+
+        setTimeout(() => {
+            closeModal("portfolioModal");
+            
+            // Cek ulang status warning
+            const profileAlert = document.getElementById("profileAlert");
+            if (profileAlert) {
+                const isComplete = isMentorProfileComplete(mentor);
+                profileAlert.style.display = isComplete ? "none" : "block";
+            }
+        }, 1000);
     }
 
     if (photoFile && cvFile) {
@@ -1054,14 +1095,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const profileAlert = document.getElementById("profileAlert");
 
             if (profileAlert) {
-                const isComplete = 
-                    mentor &&
-                    mentor.phone &&
-                    mentor.phone.length >= 10 &&
-                    mentor.role &&
-                    mentor.role !== "Pemateri Baru" &&
-                    mentor.role !== "";
-
+                const isComplete = isMentorProfileComplete(mentor);
                 profileAlert.style.display = isComplete ? "none" : "block";
             }
         }
