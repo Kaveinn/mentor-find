@@ -140,6 +140,55 @@ function getInitials(name) {
 }
 
 // =====================================================
+// FUNGSI STATISTIK REAL-TIME (BARU)
+// =====================================================
+function updateStatistics() {
+    // 1. Ambil semua data mentor
+    const allMentors = getAllMentors();
+
+    // 2. Hitung Total Pemateri
+    const totalMentors = allMentors.length;
+    
+    // 3. Hitung Bidang Kompetensi (dari array skills)
+    const allSkills = new Set();
+    allMentors.forEach(mentor => {
+        (mentor.skills || []).forEach(skill => {
+            if (skill && skill.trim() !== "") {
+                allSkills.add(skill.toLowerCase().trim());
+            }
+        });
+    });
+    const totalSkills = allSkills.size;
+
+    // 4. Hitung Kota & Kabupaten (dari property location/city)
+    const allLocations = new Set();
+    allMentors.forEach(mentor => {
+        if (mentor.location) allLocations.add(mentor.location.toLowerCase().trim());
+    });
+    const totalLocations = allLocations.size;
+
+    // 5. Hitung Rating Rata-rata
+    let totalRating = 0;
+    allMentors.forEach(mentor => {
+        totalRating += (mentor.rating || 0);
+    });
+    const avgRating = totalMentors > 0 ? (totalRating / totalMentors) : 0;
+
+    // 6. Tampilkan ke HTML
+    const elMentors = document.getElementById("statMentors");
+    if (elMentors) elMentors.textContent = `${totalMentors}+`;
+
+    const elSkills = document.getElementById("statSkills");
+    if (elSkills) elSkills.textContent = `${totalSkills}+`;
+
+    const elLocations = document.getElementById("statLocations");
+    if (elLocations) elLocations.textContent = `${totalLocations}+`;
+
+    const elRating = document.getElementById("statRating");
+    if (elRating) elRating.textContent = `${avgRating.toFixed(1)}/5`;
+}
+
+// =====================================================
 // FUNGSI NOTIFIKASI
 // =====================================================
 function showNotification(message, type = "success") {
@@ -181,9 +230,7 @@ function updateNavbar() {
     const navLinks = document.getElementById("mainNavLinks");
     const navActions = document.getElementById("mainNavActions");
 
-    if (!navLinks || !navActions) {
-        return; // Diperbaiki: tidak console.warn agar tidak merah di console
-    }
+    if (!navLinks || !navActions) return;
 
     const user = getCurrentUser();
 
@@ -395,7 +442,6 @@ function handleLogin(event) {
 function logout() {
     localStorage.removeItem("bicara_user");
     localStorage.removeItem("bicara_active_user");
-    // Pastikan scroll normal saat logout
     document.body.style.overflow = "";
     window.location.href = "index.html";
 }
@@ -624,20 +670,20 @@ function showProfile(index) {
 }
 
 // =====================================================
-// FUNGSI MODAL & MENU (DIPERBAIKI UNTUK SCROLL MOBILE)
+// FUNGSI MODAL & MENU
 // =====================================================
 function openModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.add("show");
-    document.body.style.overflow = "hidden"; // Kunci scroll saat modal buka
+    document.body.style.overflow = "hidden";
 }
 
 function closeModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
     modal.classList.remove("show");
-    document.body.style.overflow = ""; // Buka kunci scroll saat modal tutup
+    document.body.style.overflow = "";
 }
 
 function toggleMenu() {
@@ -669,7 +715,6 @@ document.addEventListener("click", function (event) {
 });
 
 window.addEventListener("resize", function () {
-    // Tutup menu mobile jika layar diperbesar
     if (window.innerWidth > 900) {
         const navLinks = document.querySelector(".nav-links");
         const menuButton = document.querySelector(".mobile-menu");
@@ -679,8 +724,7 @@ window.addEventListener("resize", function () {
             menuButton.innerHTML = "☰";
         }
     }
-
-    // PENTING: Pastikan scroll body kembali normal saat resize
+    
     const openModal = document.querySelector(".modal.show");
     if (!openModal) {
         document.body.style.overflow = ""; 
@@ -778,6 +822,9 @@ function saveMentorProfile() {
 
     saveMentors(mentors);
     showNotification("Profil berhasil disimpan! Anda kini muncul di Cari Pemateri.", "success");
+    
+    // Update statistik real-time
+    updateStatistics();
 
     setTimeout(() => {
         closeModal("editProfileModal");
@@ -865,6 +912,10 @@ function saveSkills() {
 
     saveMentors(mentors);
     showNotification("Kompetensi berhasil disimpan!", "success");
+    
+    // Update statistik real-time
+    updateStatistics();
+    
     setTimeout(() => closeModal("skillsModal"), 1000);
 }
 
@@ -986,11 +1037,13 @@ function savePortfolio() {
 // DOMCONTENTLOADED
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Pastikan scroll normal saat halaman pertama kali dibuka
     document.body.style.overflow = "";
 
     protectPages();
     updateNavbar();
+    
+    // Panggil update statistik saat halaman dimuat
+    updateStatistics();
 
     if (document.getElementById("mentorName")) {
         const user = getCurrentUser();
@@ -1039,7 +1092,6 @@ function showMentorProfile() {
 window.addEventListener("click", event => {
     if (event.target.classList.contains("modal")) {
         closeModal(event.target.id);
-        // Pastikan scroll kembali normal saat modal ditutup via background
         document.body.style.overflow = "";
     }
 });
