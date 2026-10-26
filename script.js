@@ -140,23 +140,20 @@ function getInitials(name) {
 }
 
 // =====================================================
-// FUNGSI CEK KELENGKAPAN PROFIL (DIPERBARUI & DIPERLONGGAR)
+// FUNGSI CEK KELENGKAPAN PROFIL (DIPERLONGGAR)
 // =====================================================
 function isMentorProfileComplete(mentor) {
     if (!mentor) return false;
     
-    // Pemateri default (bawaan sistem) dianggap selalu lengkap
+    // Pemateri default selalu tampil
     if (mentor.userId === null || mentor.userId === undefined) return true;
 
-    // Syarat wajib muncul: Nomor WA, Minimal 1 Skill, dan CV sudah di-upload
-    const hasPhone = mentor.phone && mentor.phone !== "null" && mentor.phone.length >= 10;
+    // Syarat minimal: WA, Skill, CV
+    const hasPhone = mentor.phone && String(mentor.phone).replace(/\D/g, "").length >= 10;
     const hasSkills = mentor.skills && mentor.skills.length > 0;
     const hasCV = mentor.cv && mentor.cv !== "null" && mentor.cv !== "";
 
-    // Role tidak wajib sempurna, tapi jangan biarkan kosong
-    const hasRole = mentor.role && mentor.role !== "Pemateri Baru" && mentor.role.trim() !== "";
-
-    return hasPhone && hasSkills && hasCV && hasRole;
+    return hasPhone && hasSkills && hasCV;
 }
 
 // =====================================================
@@ -164,8 +161,6 @@ function isMentorProfileComplete(mentor) {
 // =====================================================
 function updateStatistics() {
     const allMentors = getAllMentors();
-
-    // Filter dulu: Hanya hitung pemateri yang profilnya LENGKAP
     const validMentors = allMentors.filter(mentor => isMentorProfileComplete(mentor));
 
     const totalMentors = validMentors.length;
@@ -556,6 +551,10 @@ function renderMentors() {
 
     grid.innerHTML = "";
 
+    // Debug: tampilkan jumlah mentor
+    console.log("Total mentors (with default):", current.length);
+    console.log("Filtered valid mentors:", current.filter(m => isMentorProfileComplete(m)).length);
+
     const validMentors = current.filter(mentor => isMentorProfileComplete(mentor));
 
     if (validMentors.length === 0) {
@@ -837,12 +836,10 @@ function saveMentorProfile() {
     saveMentors(mentors);
     showNotification("Profil berhasil disimpan!", "success");
     
-    // Update statistik real-time
     updateStatistics();
 
     setTimeout(() => {
         closeModal("editProfileModal");
-        // Cek ulang apakah warning harus disembunyikan
         const profileAlert = document.getElementById("profileAlert");
         if (profileAlert) {
             const updatedMentor = mentors.find(m => m.userId === user.id);
@@ -932,12 +929,10 @@ function saveSkills() {
     saveMentors(mentors);
     showNotification("Kompetensi berhasil disimpan!", "success");
     
-    // Update statistik real-time
     updateStatistics();
 
     setTimeout(() => {
         closeModal("skillsModal");
-        // Cek ulang status warning
         const profileAlert = document.getElementById("profileAlert");
         if (profileAlert) {
             const updatedMentor = mentors.find(m => m.userId === user.id);
@@ -1032,13 +1027,11 @@ function savePortfolio() {
         saveMentors(mentors);
         showNotification("Portofolio & CV berhasil disimpan!", "success");
         
-        // Update statistik real-time
         updateStatistics();
 
         setTimeout(() => {
             closeModal("portfolioModal");
             
-            // Cek ulang status warning
             const profileAlert = document.getElementById("profileAlert");
             if (profileAlert) {
                 const isComplete = isMentorProfileComplete(mentor);
@@ -1075,7 +1068,7 @@ function savePortfolio() {
 }
 
 // =====================================================
-// DOMCONTENTLOADED
+// DOMCONTENTLOADED (FIX FINAL)
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "";
@@ -1083,7 +1076,6 @@ document.addEventListener("DOMContentLoaded", () => {
     protectPages();
     updateNavbar();
     
-    // Panggil update statistik saat halaman dimuat
     updateStatistics();
 
     if (document.getElementById("mentorName")) {
@@ -1101,13 +1093,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // FIX FINAL: Selalu render mentor di halaman search, apapun rolenya
     if (document.getElementById("mentorGrid")) {
-        const user = getCurrentUser();
-        if (!user || (user.role !== "mentor" && user.isMentor !== true)) {
-            mentorsData = getAllMentors();
-            current = [...mentorsData];
-            renderMentors();
-        }
+        mentorsData = getAllMentors();
+        current = [...mentorsData];
+        renderMentors();
     }
 });
 
