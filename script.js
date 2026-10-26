@@ -1,5 +1,5 @@
 // =====================================================
-// DATA DEFAULT MENTORS (HANYA SATU DEKLARASI)
+// DATA DEFAULT MENTORS
 // =====================================================
 const defaultMentors = [
     {
@@ -131,7 +131,10 @@ async function saveUsers(users) {
     }
 }
 
-async function getCurrentUser() {
+// =====================================================
+// FUNGSI SESSION (SINKRON - TIDAK PAKAI ASYNC)
+// =====================================================
+function getCurrentUser() {
     return JSON.parse(localStorage.getItem("bicara_user"));
 }
 
@@ -146,6 +149,9 @@ async function saveCurrentUser(user) {
     }
 }
 
+// =====================================================
+// FUNGSI MENTOR
+// =====================================================
 async function getSavedMentors() {
     try {
         const snapshot = await db.collection("mentors").get();
@@ -272,13 +278,16 @@ function showNotification(message, type = "success") {
     }, 3500);
 }
 
+// =====================================================
+// FUNGSI NAVBAR (MENGGUNAKAN getCurrentUser SINKRON)
+// =====================================================
 function updateNavbar() {
     const navLinks = document.getElementById("mainNavLinks");
     const navActions = document.getElementById("mainNavActions");
 
     if (!navLinks || !navActions) return;
 
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON, tidak pakai await
 
     if (!user) {
         navLinks.innerHTML = `
@@ -336,6 +345,9 @@ function updateNavbar() {
     `;
 }
 
+// =====================================================
+// FUNGSI AUTH (LOGIN & REGISTER)
+// =====================================================
 async function handleAuthSubmit(event, type) {
     if (event) event.preventDefault();
 
@@ -482,6 +494,9 @@ function logout() {
     window.location.href = "index.html";
 }
 
+// =====================================================
+// FUNGSI PROTEKSI HALAMAN (MENGGUNAKAN getCurrentUser SINKRON)
+// =====================================================
 function protectPages() {
     const path = window.location.pathname.toLowerCase();
 
@@ -491,7 +506,7 @@ function protectPages() {
     const isBecomeMentorPage = path.includes("become-mentor.html");
     const isDashboardPage = path.includes("mentor-dashboard.html");
 
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
 
     if ((isSearchPage || isBecomeMentorPage || isDashboardPage) && !user) {
         window.location.href = "login.html";
@@ -516,6 +531,9 @@ function protectPages() {
     }
 }
 
+// =====================================================
+// FUNGSI FILTER & RENDER MENTOR
+// =====================================================
 async function applyFilters() {
     const keyword = document.getElementById("searchKeyword")?.value.trim().toLowerCase() || "";
     const location = document.getElementById("filterLocation")?.value || "";
@@ -620,7 +638,7 @@ function showProfile(index) {
         return;
     }
 
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (user.role === "mentor" || user.isMentor === true) {
         showNotification("Pemateri tidak dapat mencari pemateri lain.", "warning");
         return;
@@ -758,7 +776,7 @@ window.addEventListener("resize", function () {
 });
 
 async function openEditProfileModal() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
 
     const mentors = await getSavedMentors(); 
@@ -783,7 +801,7 @@ async function openEditProfileModal() {
 }
 
 async function saveMentorProfile() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
 
     const role = document.getElementById("editRole").value.trim();
@@ -863,7 +881,7 @@ async function saveMentorProfile() {
 }
 
 async function openSkillsModal() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
     const mentors = await getSavedMentors(); 
     const mentor = mentors.find(m => m.userId === user.id);
@@ -905,7 +923,7 @@ document.addEventListener("input", function (e) {
 });
 
 async function saveSkills() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
 
     const input = document.getElementById("skillsInput");
@@ -955,7 +973,7 @@ async function saveSkills() {
 }
 
 async function openPortfolioModal() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
 
     const mentors = await getSavedMentors(); 
@@ -1010,7 +1028,7 @@ function previewCV(event) {
 }
 
 async function savePortfolio() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
 
     const photoInput = document.getElementById("portfolioPhoto");
@@ -1090,7 +1108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await updateStatistics(); 
 
     if (document.getElementById("mentorName")) {
-        const user = getCurrentUser(); 
+        const user = getCurrentUser(); // SINKRON
         if (user) {
             document.getElementById("mentorName").textContent = user.name;
             const mentors = await getSavedMentors(); 
@@ -1111,8 +1129,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+function isAuthenticated() {
+    return !!getCurrentUser();
+}
+
 function showMentorProfile() {
-    const user = getCurrentUser(); 
+    const user = getCurrentUser(); // SINKRON
     if (!user) return;
     const mentor = mentorsData.find(item => item.userId === user.id);
     if (!mentor) {
