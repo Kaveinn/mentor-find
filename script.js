@@ -140,7 +140,7 @@ function getInitials(name) {
 }
 
 // =====================================================
-// FUNGSI CEK KELENGKAPAN PROFIL (HELPER)
+// FUNGSI CEK KELENGKAPAN PROFIL (DIPERBARUI & DIPERLONGGAR)
 // =====================================================
 function isMentorProfileComplete(mentor) {
     if (!mentor) return false;
@@ -148,13 +148,15 @@ function isMentorProfileComplete(mentor) {
     // Pemateri default (bawaan sistem) dianggap selalu lengkap
     if (mentor.userId === null || mentor.userId === undefined) return true;
 
-    const hasPhone = mentor.phone && mentor.phone.length >= 10;
+    // Syarat wajib muncul: Nomor WA, Minimal 1 Skill, dan CV sudah di-upload
+    const hasPhone = mentor.phone && mentor.phone !== "null" && mentor.phone.length >= 10;
     const hasSkills = mentor.skills && mentor.skills.length > 0;
-    const hasCV = mentor.cv && mentor.cv !== "";
-    const hasPortfolio = mentor.portfolio && mentor.portfolio !== "Portofolio belum diisi.";
-    const hasRole = mentor.role && mentor.role !== "Pemateri Baru" && mentor.role !== "";
+    const hasCV = mentor.cv && mentor.cv !== "null" && mentor.cv !== "";
 
-    return hasPhone && hasSkills && hasCV && hasPortfolio && hasRole;
+    // Role tidak wajib sempurna, tapi jangan biarkan kosong
+    const hasRole = mentor.role && mentor.role !== "Pemateri Baru" && mentor.role.trim() !== "";
+
+    return hasPhone && hasSkills && hasCV && hasRole;
 }
 
 // =====================================================
@@ -509,7 +511,6 @@ function applyFilters() {
     const mentors = getAllMentors();
 
     const result = mentors.filter(mentor => {
-        // HANYA masukkan mentor yang profilnya LENGKAP
         if (!isMentorProfileComplete(mentor)) return false;
 
         const searchText = [
@@ -555,7 +556,6 @@ function renderMentors() {
 
     grid.innerHTML = "";
 
-    // Filter final: Gunakan helper isMentorProfileComplete
     const validMentors = current.filter(mentor => isMentorProfileComplete(mentor));
 
     if (validMentors.length === 0) {
