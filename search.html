@@ -11,9 +11,9 @@
 </head>
 <body>
   <!-- Navbar Dynamic Header -->
-<header class="navbar">
+  <header class="navbar">
     <a class="brand" href="index.html">
-      <span class="brand-mark">B</span><span>BICARA<span class="brand-accent"></span></span>
+      <span class="brand-mark">B</span><span>BICARA</span>
     </a>
     
     <!-- WAJIB: id="mainNavLinks" -->
@@ -28,10 +28,9 @@
     <div class="nav-actions" id="mainNavActions">
       <a class="btn btn-ghost" href="login.html">Masuk</a>
       <a class="btn btn-primary" href="register.html">Daftar</a>
-      <a class="btn btn-primary" href="become-mentor.html">Menjadi Pemateri</a>
     </div>
     <button class="mobile-menu" onclick="toggleMenu()">☰</button>
-</header>
+  </header>
 
   <main>
     <section class="section search-section">
@@ -43,31 +42,41 @@
         <p>Gunakan filter untuk mempersempit hasil berdasarkan kompetensi, domisili, pengalaman, dan rating.</p>
       </div>
 
-      <!-- Pemberitahuan Role Akses (Khusus Pemateri) -->
-      <div id="roleNotice" style="margin-bottom: 20px;"></div>
-
       <div class="search-layout">
         <aside class="filter-panel">
-          <div class="filter-title">Filter Pencarian <button onclick="resetFilters()">Reset</button></div>
-          <label>Kata kunci</label>
-          <input id="keyword" class="input" placeholder="Kompetensi / nama...">
+          <div class="filter-title">
+            Filter Pencarian 
+            <button onclick="resetFilters()">Reset</button>
+          </div>
+
+          <!-- ID DISESUAIKAN DENGAN SCRIPT.JS -->
+          <label for="searchKeyword">Kata kunci</label>
+          <input id="searchKeyword" class="input" placeholder="Kompetensi / nama...">
           
-          <label>Domisili</label>
-          <select id="location" class="input">
+          <label for="filterLocation">Domisili</label>
+          <select id="filterLocation" class="input">
             <option value="">Semua lokasi</option>
-            <option>Malang</option><option>Surabaya</option><option>Bandung</option>
-            <option>Jakarta</option><option>Yogyakarta</option><option>Semarang</option>
+            <option>Malang</option>
+            <option>Surabaya</option>
+            <option>Bandung</option>
+            <option>Jakarta</option>
+            <option>Yogyakarta</option>
+            <option>Semarang</option>
           </select>
           
-          <label>Bidang kompetensi</label>
-          <select id="category" class="input">
+          <label for="filterCategory">Bidang kompetensi</label>
+          <select id="filterCategory" class="input">
             <option value="">Semua bidang</option>
-            <option>Teknologi</option><option>Desain</option><option>Bisnis</option>
-            <option>Marketing</option><option>Elektronika</option><option>Pendidikan</option>
+            <option>Teknologi</option>
+            <option>Desain</option>
+            <option>Bisnis</option>
+            <option>Marketing</option>
+            <option>Elektronika</option>
+            <option>Pendidikan</option>
           </select>
 
-          <label>Pengalaman minimal</label>
-          <select id="experience" class="input">
+          <label for="filterExperience">Pengalaman minimal</label>
+          <select id="filterExperience" class="input">
             <option value="">Semua pengalaman</option>
             <option value="1">1+ tahun</option>
             <option value="3">3+ tahun</option>
@@ -75,8 +84,8 @@
             <option value="10">10+ tahun</option>
           </select>
 
-          <label>Rating minimal</label>
-          <select id="rating" class="input">
+          <label for="filterRating">Rating minimal</label>
+          <select id="filterRating" class="input">
             <option value="">Semua rating</option>
             <option value="4.5">4.5+</option>
             <option value="4.8">4.8+</option>
@@ -88,7 +97,7 @@
         <div class="results">
           <div class="results-top">
             <span id="resultCount">Memuat pemateri...</span>
-            <select id="sort" onchange="renderMentors()">
+            <select id="sort" onchange="applyFilters()">
               <option value="relevance">Paling relevan</option>
               <option value="rating">Rating tertinggi</option>
               <option value="experience">Pengalaman terbanyak</option>
@@ -109,7 +118,7 @@
 
   <footer>
     <div class="footer-brand">
-      <a class="brand" href="index.html"><span class="brand-mark">B</span><span>BICARA<span class="brand-accent"></span></span></a>
+      <a class="brand" href="index.html"><span class="brand-mark">B</span><span>BICARA</span></a>
       <p>Platform pencarian pemateri berbasis kompetensi.</p>
     </div>
     <div>
@@ -125,7 +134,7 @@
     </div>
     <div>
       <h4>Kontak</h4>
-      <a href="mailto:hello@mentorfind.id">hello@bicara.id</a>
+      <a href="mailto:hello@bicara.id">hello@bicara.id</a>
       <a href="#">Pusat Bantuan</a>
     </div>
   </footer> 
