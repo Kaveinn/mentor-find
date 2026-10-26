@@ -168,6 +168,31 @@
     </div>
   </footer>
 
+  <!-- Firebase SDK (Versi Compat agar jalan di browser tanpa bundler) -->
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // Konfigurasi Firebase Anda
+  const firebaseConfig = {
+    apiKey: "AIzaSyCv9MWlpfM5mMNEvESeBN7dCmmS_QuWTxE",
+    authDomain: "bicara-c3949.firebaseapp.com",
+    projectId: "bicara-c3949",
+    storageBucket: "bicara-c3949.firebasestorage.app",
+    messagingSenderId: "716252426453",
+    appId: "1:716252426453:web:fb957784bc2f219b44f25c",
+    measurementId: "G-D1D8PS6SWX"
+  };
+
+  // Inisialisasi Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log("Firebase berhasil diinisialisasi!");
+</script>
+
+<!-- Script.js Anda -->
+<script src="script.js"></script>
+
   <script src="script.js"></script>
 </body>
 </html>
