@@ -687,7 +687,7 @@ function showProfile(index) {
         ` : ""}
 
         <div class="portfolio">
-            <h4>Portofolio</h4>
+            <h4>Deskripsi Portofolio</h4>
             <p>${mentor.portfolio}</p>
             ${mentor.cv ? `
                 <a href="${mentor.cv}" download="CV-${mentor.name}.pdf" 
@@ -947,7 +947,7 @@ async function saveSkills() {
             rating: 5,
             skills: skills,
             desc: "Profil pemateri terdaftar.",
-            portfolio: "Portofolio belum diisi.",
+            portfolio: "Deskripsi portofolio belum diisi.",
             phone: "",
             userId: user.id
         });
@@ -987,7 +987,7 @@ async function openPortfolioModal() {
 
     if (mentor) {
         if (portfolioDesc) {
-            portfolioDesc.value = mentor.portfolio && mentor.portfolio !== "Portofolio belum diisi." ? mentor.portfolio : "";
+            portfolioDesc.value = mentor.portfolio && mentor.portfolio !== "Deskripsi portofolio belum diisi." ? mentor.portfolio : "";
         }
         if (mentor.photo && photoPreview) {
             photoPreview.innerHTML = `<img src="${mentor.photo}" alt="Foto Portofolio" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--line);">`;
