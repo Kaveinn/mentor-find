@@ -213,5 +213,16 @@
   </script>
 
   <script src="script.js"></script>
+
+  <script src="script.js"></script>
+
+<!-- PAKSA UPDATE NAVBAR SETELAH SEMUA SCRIPT DIMUAT -->
+<script>
+    window.addEventListener("load", function() {
+        if (typeof updateNavbar === "function") {
+            updateNavbar();
+        }
+    });
+</script>
 </body>
 </html>
