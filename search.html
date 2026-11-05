@@ -147,6 +147,36 @@
     </div>
   </div>
 
+  <!-- =====================================================
+     MODAL: ULASAN / REVIEW (FITUR BARU)
+     ===================================================== -->
+<div class="modal" id="reviewModal">
+    <div class="modal-box profile-modal">
+        <button class="modal-close" onclick="closeModal('reviewModal')">✕</button>
+        <span class="eyebrow">BERI ULASAN</span>
+        <h2>Ulasan untuk <span id="reviewMentorName"></span></h2>
+        
+        <div class="form-group">
+            <label>Rating (1-5 Bintang)</label>
+            <div id="starRating" style="font-size: 32px; cursor: pointer; color: #ddd;">
+                <span data-value="1" onclick="setRating(1)">★</span>
+                <span data-value="2" onclick="setRating(2)">★</span>
+                <span data-value="3" onclick="setRating(3)">★</span>
+                <span data-value="4" onclick="setRating(4)">★</span>
+                <span data-value="5" onclick="setRating(5)">★</span>
+            </div>
+            <input type="hidden" id="reviewRatingValue" value="0">
+        </div>
+        
+        <div class="form-group">
+            <label for="reviewComment">Komentar</label>
+            <textarea id="reviewComment" class="input" rows="4" placeholder="Tulis pengalaman Anda dengan pemateri ini..."></textarea>
+        </div>
+        
+        <button class="btn btn-primary full" onclick="submitReview()">Kirim Ulasan</button>
+    </div>
+</div>
+
   <!-- Firebase SDK (Versi Compat agar jalan di browser tanpa bundler) -->
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
