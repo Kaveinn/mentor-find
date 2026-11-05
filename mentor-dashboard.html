@@ -38,7 +38,7 @@
         <div id="profileAlert" style="display: none; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 12px; padding: 16px 20px; margin-bottom: 25px;">
             <strong style="color: #92400e;">⚠️ Profil Anda Belum Lengkap</strong>
             <p style="margin: 8px 0 0; color: #78350f; font-size: 13px;">
-                Lengkapi profil Anda (keahlian dan nomor WhatsApp) agar muncul di halaman <strong>Cari Pemateri</strong>.
+                Lengkapi profil Anda (keahlian, nomor WhatsApp, dan CV) agar muncul di halaman <strong>Cari Pemateri</strong>.
             </p>
             <button class="btn btn-primary" style="margin-top: 12px;" onclick="openEditProfileModal()">
                 Lengkapi Sekarang
@@ -48,7 +48,7 @@
         <div class="hero-content" style="max-width: 800px; margin-bottom: 40px;">
             <span class="eyebrow">DASHBOARD PEMATERI</span>
             <h1>Selamat datang, <span id="mentorName">Pemateri</span></h1>
-            <p>Kelola profil, kompetensi, pengalaman, dan portofolio kamu sebagai pemateri di MentorFind.</p>
+            <p>Kelola profil, kompetensi, pengalaman, dan portofolio kamu sebagai pemateri di BICARA.</p>
         </div>
 
         <!-- CARD GRID -->
@@ -74,7 +74,7 @@
             <div class="dashboard-card">
                 <div class="dashboard-icon">📁</div>
                 <h3>Portofolio</h3>
-                <p>Tampilkan pengalaman, hasil pekerjaan, dan CV Anda.</p>
+                <p>Tampilkan pengalaman, hasil pekerjaan, CV, dan sertifikat Anda.</p>
                 <button class="btn btn-primary" onclick="openPortfolioModal()">Kelola Portofolio</button>
             </div>
 
@@ -82,7 +82,7 @@
             <div class="dashboard-card">
                 <div class="dashboard-icon">✏️</div>
                 <h3>Edit Profil & Kontak</h3>
-                <p>Lengkapi data profil dan kontak WhatsApp kamu.</p>
+                <p>Lengkapi data profil, foto profil, dan kontak WhatsApp kamu.</p>
                 <button class="btn btn-primary" onclick="openEditProfileModal()">Edit Profil</button>
             </div>
 
@@ -109,7 +109,7 @@
 </footer>
 
 <!-- =====================================================
-     MODAL: EDIT PROFIL (HANYA DATA DASAR)
+     MODAL: EDIT PROFIL (DENGAN FOTO PROFIL)
      ===================================================== -->
 <div class="modal" id="editProfileModal">
     <div class="modal-box profile-modal">
@@ -120,6 +120,14 @@
         <p class="muted" style="margin-bottom: 20px;">
             Data ini akan muncul di halaman Cari Pemateri dan dapat dihubungi oleh calon pengguna.
         </p>
+
+        <!-- FOTO PROFIL (FITUR BARU) -->
+        <div class="form-group">
+            <label for="editPhotoProfile">Foto Profil (Avatar)</label>
+            <input type="file" id="editPhotoProfile" class="input" accept="image/*" onchange="previewProfilePhoto(event)">
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">Format: JPG/PNG, maks 2MB.</small>
+            <div id="profilePhotoPreview" style="margin-top: 12px;"></div>
+        </div>
 
         <div class="form-group">
             <label for="editRole">Bidang / Keahlian Utama</label>
@@ -193,32 +201,31 @@
 </div>
 
 <!-- =====================================================
-     MODAL: KELOLA PORTOFOLIO
+     MODAL: KELOLA PORTOFOLIO (DENGAN GALERI & CV 10MB)
      ===================================================== -->
-<!-- Modal Kelola Portofolio -->
 <div class="modal" id="portfolioModal">
     <div class="modal-box profile-modal">
         <button class="modal-close" onclick="closeModal('portfolioModal')">✕</button>
 
         <span class="eyebrow">KELOLA PORTOFOLIO</span>
-        <h2>Portofolio & CV Anda</h2>
+        <h2>Portofolio, CV & Sertifikat</h2>
         <p class="muted" style="margin-bottom: 20px;">
-            Upload foto portofolio dan CV Anda. Data akan tampil di halaman Cari Pemateri.
+            Upload foto, CV, dan sertifikat Anda. Data akan tampil di halaman Cari Pemateri.
         </p>
 
-        <!-- Input Foto -->
+        <!-- Foto Utama -->
         <div class="form-group">
-            <label for="portfolioPhoto">Foto Portofolio</label>
+            <label for="portfolioPhoto">Foto Portofolio Utama</label>
             <input type="file" id="portfolioPhoto" class="input" accept="image/*" onchange="previewPhoto(event)">
-            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">Format: JPG/PNG, maks 500KB.</small>
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">Format: JPG/PNG, maks 5MB.</small>
             <div id="photoPreview" style="margin-top: 12px;"></div>
         </div>
 
-        <!-- Input CV -->
+        <!-- CV (Batas 10MB) -->
         <div class="form-group">
             <label for="portfolioCV">File CV (PDF)</label>
             <input type="file" id="portfolioCV" class="input" accept="application/pdf" onchange="previewCV(event)">
-            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">Format: PDF, maks 1MB.</small>
+            <small style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">Format: PDF, maks 10MB.</small>
             <div id="cvPreview" style="margin-top: 12px;"></div>
         </div>
 
@@ -228,18 +235,25 @@
             <textarea id="portfolioDesc" class="input" rows="3" placeholder="Ceritakan portofolio atau proyek terbaik Anda..."></textarea>
         </div>
 
+        <!-- GALERI SERTIFIKAT (FITUR BARU) -->
+        <div class="form-group">
+            <label>Galeri Sertifikat / Portofolio Lainnya</label>
+            <button type="button" class="btn btn-ghost full" onclick="addGalleryItem()" style="margin-bottom: 10px;">+ Tambah Sertifikat</button>
+            <div id="galleryInputs" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            <div id="galleryPreview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;"></div>
+        </div>
+
         <button class="btn btn-primary full" onclick="savePortfolio()" style="margin-top: 20px;">
-            Simpan Portofolio & CV
+            Simpan Semua
         </button>
     </div>
 </div>
 
-<!-- Firebase SDK (Versi Compat agar jalan di browser tanpa bundler) -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // Konfigurasi Firebase Anda
   const firebaseConfig = {
     apiKey: "AIzaSyCv9MWlpfM5mMNEvESeBN7dCmmS_QuWTxE",
     authDomain: "bicara-c3949.firebaseapp.com",
@@ -249,14 +263,10 @@
     appId: "1:716252426453:web:fb957784bc2f219b44f25c",
     measurementId: "G-D1D8PS6SWX"
   };
-
-  // Inisialisasi Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   console.log("Firebase berhasil diinisialisasi!");
 </script>
-
-<!-- Script.js Anda -->
 
 <script src="script.js"></script>
 

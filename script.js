@@ -95,11 +95,7 @@ const defaultMentors = [
 ];
 
 // =====================================================
-// KONFIGURASI FIREBASE (Asumsi db sudah diinisialisasi di HTML)
-// =====================================================
-
-// =====================================================
-// FUNGSI FIRESTORE (PENGGANTI LOCALSTORAGE)
+// FUNGSI FIRESTORE
 // =====================================================
 
 async function getUsers() {
@@ -131,9 +127,6 @@ async function saveUsers(users) {
     }
 }
 
-// =====================================================
-// FUNGSI SESSION (SINKRON - TIDAK PAKAI ASYNC)
-// =====================================================
 function getCurrentUser() {
     return JSON.parse(localStorage.getItem("bicara_user"));
 }
@@ -149,9 +142,6 @@ async function saveCurrentUser(user) {
     }
 }
 
-// =====================================================
-// FUNGSI MENTOR
-// =====================================================
 async function getSavedMentors() {
     try {
         const snapshot = await db.collection("mentors").get();
@@ -278,16 +268,13 @@ function showNotification(message, type = "success") {
     }, 3500);
 }
 
-// =====================================================
-// FUNGSI NAVBAR (MENGGUNAKAN getCurrentUser SINKRON)
-// =====================================================
 function updateNavbar() {
     const navLinks = document.getElementById("mainNavLinks");
     const navActions = document.getElementById("mainNavActions");
 
     if (!navLinks || !navActions) return;
 
-    const user = getCurrentUser(); // SINKRON, tidak pakai await
+    const user = getCurrentUser(); 
 
     if (!user) {
         navLinks.innerHTML = `
@@ -345,9 +332,6 @@ function updateNavbar() {
     `;
 }
 
-// =====================================================
-// FUNGSI AUTH (LOGIN & REGISTER)
-// =====================================================
 async function handleAuthSubmit(event, type) {
     if (event) event.preventDefault();
 
@@ -494,9 +478,6 @@ function logout() {
     window.location.href = "index.html";
 }
 
-// =====================================================
-// FUNGSI PROTEKSI HALAMAN (MENGGUNAKAN getCurrentUser SINKRON)
-// =====================================================
 function protectPages() {
     const path = window.location.pathname.toLowerCase();
 
@@ -506,7 +487,7 @@ function protectPages() {
     const isBecomeMentorPage = path.includes("become-mentor.html");
     const isDashboardPage = path.includes("mentor-dashboard.html");
 
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
 
     if ((isSearchPage || isBecomeMentorPage || isDashboardPage) && !user) {
         window.location.href = "login.html";
@@ -531,9 +512,6 @@ function protectPages() {
     }
 }
 
-// =====================================================
-// FUNGSI FILTER & RENDER MENTOR
-// =====================================================
 async function applyFilters() {
     const keyword = document.getElementById("searchKeyword")?.value.trim().toLowerCase() || "";
     const location = document.getElementById("filterLocation")?.value || "";
@@ -601,11 +579,15 @@ async function renderMentors() {
     } else {
         validMentors.forEach(mentor => {
             const index = mentorsData.findIndex(item => item.id === mentor.id);
+            // TAMPILKAN FOTO PROFIL JIKA ADA
+            const avatarHtml = mentor.avatarPhoto 
+                ? `<img src="${mentor.avatarPhoto}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">`
+                : `<div class="avatar avatar-sm">${mentor.initials}</div>`;
 
             grid.innerHTML += `
                 <article class="mentor-card" onclick="showProfile(${index})">
                     <div class="mentor-head">
-                        <div class="avatar avatar-sm">${mentor.initials}</div>
+                        ${avatarHtml}
                         <div class="mentor-info">
                             <h3>${mentor.name}</h3>
                             <p>${mentor.role}</p>
@@ -638,7 +620,7 @@ function showProfile(index) {
         return;
     }
 
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (user.role === "mentor" || user.isMentor === true) {
         showNotification("Pemateri tidak dapat mencari pemateri lain.", "warning");
         return;
@@ -662,10 +644,15 @@ function showProfile(index) {
     const waLink = waNumber
         ? `https://wa.me/${waNumber}?text=${waMessage}`
         : "#";
+    
+    // TAMPILKAN FOTO PROFIL DI MODAL
+    const avatarDetailHtml = mentor.avatarPhoto 
+        ? `<img src="${mentor.avatarPhoto}" alt="${mentor.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">`
+        : `<div class="avatar">${mentor.initials}</div>`;
 
     profileContent.innerHTML = `
         <div class="profile-detail">
-            <div class="avatar">${mentor.initials}</div>
+            ${avatarDetailHtml}
             <div>
                 <span class="verified-badge">✓ Terverifikasi</span>
                 <h2>${mentor.name}</h2>
@@ -681,9 +668,16 @@ function showProfile(index) {
         <p class="muted">${mentor.exp} tahun pengalaman profesional.</p>
 
         ${mentor.photo ? `
-            <div class="detail-label">FOTO PORTOFOLIO</div>
+            <div class="detail-label">FOTO PORTOFOLIO UTAMA</div>
             <img src="${mentor.photo}" alt="Portofolio ${mentor.name}" 
                  style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-top: 8px;">
+        ` : ""}
+
+        ${mentor.gallery && mentor.gallery.length > 0 ? `
+            <div class="detail-label">GALERI SERTIFIKAT & PORTOFOLIO</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                ${mentor.gallery.map(img => `<img src="${img}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line);">`).join("")}
+            </div>
         ` : ""}
 
         <div class="portfolio">
@@ -776,7 +770,7 @@ window.addEventListener("resize", function () {
 });
 
 async function openEditProfileModal() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
 
     const mentors = await getSavedMentors(); 
@@ -793,6 +787,16 @@ async function openEditProfileModal() {
         setValue("editCategory", mentor.category || "Umum");
         setValue("editExperience", mentor.exp || 0);
         setValue("editPhone", mentor.phone || user.phone || "");
+        
+        // Tampilkan foto profil jika ada
+        const profilePhotoPreview = document.getElementById("profilePhotoPreview");
+        if (profilePhotoPreview) {
+            if (mentor.avatarPhoto) {
+                profilePhotoPreview.innerHTML = `<img src="${mentor.avatarPhoto}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                profilePhotoPreview.innerHTML = "";
+            }
+        }
     } else {
         setValue("editPhone", user.phone || "");
     }
@@ -800,8 +804,25 @@ async function openEditProfileModal() {
     openModal("editProfileModal");
 }
 
+// Preview Foto Profil
+function previewProfilePhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        showNotification("Ukuran foto profil maksimal 2MB.", "warning");
+        event.target.value = "";
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById("profilePhotoPreview");
+        if (preview) preview.innerHTML = `<img src="${e.target.result}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
+    };
+    reader.readAsDataURL(file);
+}
+
 async function saveMentorProfile() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
 
     const role = document.getElementById("editRole").value.trim();
@@ -809,6 +830,8 @@ async function saveMentorProfile() {
     const category = document.getElementById("editCategory").value;
     const experience = Number(document.getElementById("editExperience").value) || 0;
     const phone = document.getElementById("editPhone").value.trim();
+    const profilePhotoInput = document.getElementById("editPhotoProfile");
+    const profilePhotoFile = profilePhotoInput && profilePhotoInput.files[0];
 
     if (!role) { showNotification("Bidang keahlian wajib diisi.", "warning"); return; }
     if (!location) { showNotification("Domisili wajib diisi.", "warning"); return; }
@@ -836,6 +859,16 @@ async function saveMentorProfile() {
     const mentorIndex = mentors.findIndex(item => item.userId === user.id);
     const existing = mentorIndex !== -1 ? mentors[mentorIndex] : {};
 
+    // Proses Foto Profil
+    let profilePhotoData = existing.avatarPhoto || null;
+    if (profilePhotoFile) {
+        profilePhotoData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(profilePhotoFile);
+        });
+    }
+
     const mentorData = {
         id: existing.id || "mentor-" + Date.now(),
         name: user.name,
@@ -848,10 +881,12 @@ async function saveMentorProfile() {
         rating: existing.rating || 5,
         skills: existing.skills || [],
         desc: existing.desc || "Pemateri terdaftar di BICARA.",
-        portfolio: existing.portfolio || "Portofolio belum diisi.",
+        portfolio: existing.portfolio || "Deskripsi portofolio belum diisi.",
         phone: phone,
         photo: existing.photo || null,
         cv: existing.cv || null,
+        avatarPhoto: profilePhotoData,
+        gallery: existing.gallery || [],
         userId: user.id
     };
 
@@ -881,7 +916,7 @@ async function saveMentorProfile() {
 }
 
 async function openSkillsModal() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
     const mentors = await getSavedMentors(); 
     const mentor = mentors.find(m => m.userId === user.id);
@@ -923,7 +958,7 @@ document.addEventListener("input", function (e) {
 });
 
 async function saveSkills() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
 
     const input = document.getElementById("skillsInput");
@@ -973,7 +1008,7 @@ async function saveSkills() {
 }
 
 async function openPortfolioModal() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
 
     const mentors = await getSavedMentors(); 
@@ -981,9 +1016,13 @@ async function openPortfolioModal() {
     const portfolioDesc = document.getElementById("portfolioDesc");
     const photoPreview = document.getElementById("photoPreview");
     const cvPreview = document.getElementById("cvPreview");
+    const galleryInputs = document.getElementById("galleryInputs");
+    const galleryPreview = document.getElementById("galleryPreview");
 
     if (photoPreview) photoPreview.innerHTML = "";
     if (cvPreview) cvPreview.innerHTML = "";
+    if (galleryInputs) galleryInputs.innerHTML = "";
+    if (galleryPreview) galleryPreview.innerHTML = "";
 
     if (mentor) {
         if (portfolioDesc) {
@@ -995,6 +1034,12 @@ async function openPortfolioModal() {
         if (mentor.cv && cvPreview) {
             cvPreview.innerHTML = `<div style="padding: 10px; background: #f5f5fa; border-radius: 8px; font-size: 12px;">📄 CV sudah diupload. <a href="${mentor.cv}" download="CV-${mentor.name}.pdf" style="color: var(--primary); font-weight: 600;">Download</a></div>`;
         }
+        // Tampilkan Galeri
+        if (mentor.gallery && mentor.gallery.length > 0 && galleryPreview) {
+            mentor.gallery.forEach(img => {
+                galleryPreview.innerHTML += `<img src="${img}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line);">`;
+            });
+        }
     }
     openModal("portfolioModal");
 }
@@ -1002,8 +1047,8 @@ async function openPortfolioModal() {
 function previewPhoto(event) {
     const file = event.target.files[0];
     if (!file) return;
-    if (file.size > 500 * 1024) {
-        showNotification("Ukuran foto maksimal 500KB.", "warning");
+    if (file.size > 5 * 1024 * 1024) { // Naikkan ke 5MB
+        showNotification("Ukuran foto maksimal 5MB.", "warning");
         event.target.value = "";
         return;
     }
@@ -1018,8 +1063,8 @@ function previewPhoto(event) {
 function previewCV(event) {
     const file = event.target.files[0];
     if (!file) return;
-    if (file.size > 1024 * 1024) {
-        showNotification("Ukuran CV maksimal 1MB.", "warning");
+    if (file.size > 10 * 1024 * 1024) { // Naikkan ke 10MB
+        showNotification("Ukuran CV maksimal 10MB.", "warning");
         event.target.value = "";
         return;
     }
@@ -1027,13 +1072,45 @@ function previewCV(event) {
     if (preview) preview.innerHTML = `<div style="padding: 10px; background: #f5f5fa; border-radius: 8px; font-size: 12px;">📄 File siap diupload: <strong>${file.name}</strong></div>`;
 }
 
+// Fungsi Tambah Galeri
+function addGalleryItem() {
+    const container = document.getElementById("galleryInputs");
+    if (!container) return;
+    
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.className = "input";
+    input.onchange = previewGallery;
+    container.appendChild(input);
+}
+
+function previewGallery(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification("Ukuran gambar maksimal 5MB.", "warning");
+        event.target.value = "";
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById("galleryPreview");
+        if (preview) {
+            preview.innerHTML += `<img src="${e.target.result}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line);">`;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
 async function savePortfolio() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
 
     const photoInput = document.getElementById("portfolioPhoto");
     const cvInput = document.getElementById("portfolioCV");
     const descInput = document.getElementById("portfolioDesc");
+    const galleryInputs = document.querySelectorAll("#galleryInputs input[type='file']");
 
     const photoFile = photoInput && photoInput.files[0];
     const cvFile = cvInput && cvInput.files[0];
@@ -1049,54 +1126,48 @@ async function savePortfolio() {
 
     const mentor = mentors[mentorIndex];
 
-    async function finishSave(photoData, cvData) {
-        if (photoData) mentor.photo = photoData;
-        if (cvData) mentor.cv = cvData;
-        if (desc) mentor.portfolio = desc;
+    // Proses Foto Utama
+    if (photoFile) {
+        if (photoFile.size > 5 * 1024 * 1024) { showNotification("Foto utama maks 5MB", "warning"); return; }
+        mentor.photo = await new Promise((res) => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(photoFile); });
+    }
 
-        await saveMentors(mentors); 
-        showNotification("Portofolio & CV berhasil disimpan!", "success");
-        
-        await updateStatistics(); 
+    // Proses CV (Batas 10MB)
+    if (cvFile) {
+        if (cvFile.size > 10 * 1024 * 1024) { showNotification("CV maks 10MB", "warning"); return; }
+        mentor.cv = await new Promise((res) => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(cvFile); });
+    }
 
-        setTimeout(async () => {
-            closeModal("portfolioModal");
-            
-            const profileAlert = document.getElementById("profileAlert");
-            if (profileAlert) {
-                const updatedMentors = await getSavedMentors(); 
-                const updatedMentor = updatedMentors.find(m => m.userId === user.id);
-                const isComplete = isMentorProfileComplete(updatedMentor);
-                profileAlert.style.display = isComplete ? "none" : "block";
+    if (desc) mentor.portfolio = desc;
+
+    // Proses Galeri
+    if (galleryInputs.length > 0) {
+        mentor.gallery = mentor.gallery || [];
+        for (const input of galleryInputs) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 5 * 1024 * 1024) { showNotification("Sertifikat maks 5MB", "warning"); return; }
+                const base64 = await new Promise((res) => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(file); });
+                mentor.gallery.push(base64);
             }
-        }, 1000);
+        }
     }
 
-    if (photoFile && cvFile) {
-        const photoReader = new FileReader();
-        const cvReader = new FileReader();
-        let photoData = null;
-        let cvData = null;
-        photoReader.onload = function (e) {
-            photoData = e.target.result;
-            cvReader.readAsDataURL(cvFile);
-        };
-        cvReader.onload = function (e) {
-            cvData = e.target.result;
-            finishSave(photoData, cvData);
-        };
-        photoReader.readAsDataURL(photoFile);
-    } else if (photoFile) {
-        const reader = new FileReader();
-        reader.onload = function (e) { finishSave(e.target.result, null); };
-        reader.readAsDataURL(photoFile);
-    } else if (cvFile) {
-        const reader = new FileReader();
-        reader.onload = function (e) { finishSave(null, e.target.result); };
-        reader.readAsDataURL(cvFile);
-    } else {
-        finishSave(null, null);
-    }
+    await saveMentors(mentors); 
+    showNotification("Portofolio, CV & Sertifikat berhasil disimpan!", "success");
+    
+    await updateStatistics(); 
+
+    setTimeout(async () => {
+        closeModal("portfolioModal");
+        const profileAlert = document.getElementById("profileAlert");
+        if (profileAlert) {
+            const updatedMentors = await getSavedMentors(); 
+            const updatedMentor = updatedMentors.find(m => m.userId === user.id);
+            const isComplete = isMentorProfileComplete(updatedMentor);
+            profileAlert.style.display = isComplete ? "none" : "block";
+        }
+    }, 1000);
 }
 
 document.addEventListener("DOMContentLoaded", async () => { 
@@ -1108,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await updateStatistics(); 
 
     if (document.getElementById("mentorName")) {
-        const user = getCurrentUser(); // SINKRON
+        const user = getCurrentUser(); 
         if (user) {
             document.getElementById("mentorName").textContent = user.name;
             const mentors = await getSavedMentors(); 
@@ -1134,7 +1205,7 @@ function isAuthenticated() {
 }
 
 function showMentorProfile() {
-    const user = getCurrentUser(); // SINKRON
+    const user = getCurrentUser(); 
     if (!user) return;
     const mentor = mentorsData.find(item => item.userId === user.id);
     if (!mentor) {
