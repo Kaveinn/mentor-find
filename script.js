@@ -363,7 +363,7 @@ async function handleAuthSubmit(event, type) {
         }
 
         await saveCurrentUser(user); 
-        updateNavbar(); // Paksa update navbar setelah login
+        updateNavbar(); 
         showNotification("Login berhasil.", "success");
 
         setTimeout(() => {
@@ -452,7 +452,7 @@ async function handleRegister(event) {
     users.push(newUser);
     await saveUsers(users); 
     await saveCurrentUser(newUser); 
-    updateNavbar(); // Paksa update navbar setelah register
+    updateNavbar(); 
 
     if (isMentor) {
         showNotification("Pendaftaran berhasil! Silakan lengkapi profil Anda.", "success");
@@ -778,7 +778,7 @@ window.addEventListener("resize", function () {
 });
 
 // =====================================================
-// FUNGSI ULASAN (REVIEW)
+// FUNGSI ULASAN (REVIEW) - DENGAN SENSOR TOTAL
 // =====================================================
 
 async function loadReviews(mentorId) {
@@ -803,17 +803,27 @@ async function loadReviews(mentorId) {
         const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
         const avgRating = (totalRating / reviews.length).toFixed(1);
         
+        // FUNGSI SENSOR NAMA TOTAL
+        function sensorName(name) {
+            if (!name) return "A***";
+            const parts = name.trim().split(" ");
+            return parts.map(p => p.charAt(0).toUpperCase() + "***").join(" ");
+        }
+        
         reviewsList.innerHTML = `
             <div style="margin-bottom: 10px; font-weight: bold;">
                 ⭐ ${avgRating} / 5 (${reviews.length} ulasan)
             </div>
-            ${reviews.map(r => `
-                <div style="padding: 10px; background: #f5f5fa; border-radius: 8px; margin-bottom: 8px;">
-                    <strong>${r.userName}</strong> 
-                    <span style="color: #f59e0b;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
-                    <p style="margin: 5px 0 0; font-size: 12px;">${r.comment}</p>
-                </div>
-            `).join("")}
+            ${reviews.map(r => {
+                const displayName = sensorName(r.userName);
+                return `
+                    <div style="padding: 10px; background: #f5f5fa; border-radius: 8px; margin-bottom: 8px;">
+                        <strong>${displayName}</strong> 
+                        <span style="color: #f59e0b;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                        <p style="margin: 5px 0 0; font-size: 12px;">${r.comment}</p>
+                    </div>
+                `;
+            }).join("")}
         `;
     } catch (error) {
         console.error("Error loadReviews:", error);
@@ -874,12 +884,15 @@ async function submitReview() {
         return;
     }
     
+    // Simpan inisial saja (lebih aman)
+    const initials = getInitials(user.name); 
+    
     try {
         await db.collection("reviews").add({
             mentorId: mentorId,
             mentorName: document.getElementById("reviewMentorName").textContent,
             userId: user.id,
-            userName: user.name,
+            userName: initials,
             rating: rating,
             comment: comment,
             createdAt: new Date().toISOString()
@@ -1350,16 +1363,11 @@ async function savePortfolio() {
 document.addEventListener("DOMContentLoaded", async () => { 
     document.body.style.overflow = "";
 
-    // 1. PANGGIL updateNavbar DULU agar navbar langsung sesuai session
     updateNavbar();
-
-    // 2. Baru lakukan proteksi halaman
     protectPages();
     
-    // 3. Update statistik
     await updateStatistics(); 
 
-    // 4. Cek halaman dashboard pemateri
     if (document.getElementById("mentorName")) {
         const user = getCurrentUser(); 
         if (user) {
@@ -1375,7 +1383,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // 5. Render mentor jika di halaman search
     if (document.getElementById("mentorGrid")) {
         mentorsData = await getAllMentors(); 
         current = [...mentorsData];
