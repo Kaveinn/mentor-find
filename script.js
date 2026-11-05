@@ -579,7 +579,6 @@ async function renderMentors() {
     } else {
         validMentors.forEach(mentor => {
             const index = mentorsData.findIndex(item => item.id === mentor.id);
-            // TAMPILKAN FOTO PROFIL JIKA ADA
             const avatarHtml = mentor.avatarPhoto 
                 ? `<img src="${mentor.avatarPhoto}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">`
                 : `<div class="avatar avatar-sm">${mentor.initials}</div>`;
@@ -645,7 +644,6 @@ function showProfile(index) {
         ? `https://wa.me/${waNumber}?text=${waMessage}`
         : "#";
     
-    // TAMPILKAN FOTO PROFIL DI MODAL
     const avatarDetailHtml = mentor.avatarPhoto 
         ? `<img src="${mentor.avatarPhoto}" alt="${mentor.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">`
         : `<div class="avatar">${mentor.initials}</div>`;
@@ -692,6 +690,13 @@ function showProfile(index) {
             ` : ""}
         </div>
 
+        <!-- TOMBOL BERI ULASAN -->
+        <div class="detail-label">ULASAN PENGGUNA</div>
+        <div id="reviewsList" style="margin-top: 8px;"></div>
+        <button class="btn btn-ghost full" style="margin-top: 10px;" onclick="openReviewModal('${mentor.id}', '${mentor.name}')">
+            ⭐ Beri Ulasan
+        </button>
+
         <div class="contact-section">
             <h4>Hubungi Pemateri</h4>
             <p class="muted">Diskusikan kebutuhan acara Anda langsung dengan pemateri.</p>
@@ -708,6 +713,7 @@ function showProfile(index) {
     `;
 
     openModal("profileModal");
+    loadReviews(mentor.id);
 }
 
 function openModal(id) {
@@ -769,436 +775,153 @@ window.addEventListener("resize", function () {
     }
 });
 
-async function openEditProfileModal() {
-    const user = getCurrentUser(); 
-    if (!user) return;
+// =====================================================
+// FUNGSI ULASAN (REVIEW)
+// =====================================================
 
-    const mentors = await getSavedMentors(); 
-    const mentor = mentors.find(item => item.userId === user.id);
-
-    function setValue(id, value) {
-        const el = document.getElementById(id);
-        if (el) el.value = value;
-    }
-
-    if (mentor) {
-        setValue("editRole", mentor.role || "");
-        setValue("editLocation", mentor.location || "");
-        setValue("editCategory", mentor.category || "Umum");
-        setValue("editExperience", mentor.exp || 0);
-        setValue("editPhone", mentor.phone || user.phone || "");
+async function loadReviews(mentorId) {
+    const reviewsList = document.getElementById("reviewsList");
+    if (!reviewsList) return;
+    
+    try {
+        const snapshot = await db.collection("reviews")
+            .where("mentorId", "==", mentorId)
+            .get();
         
-        // Tampilkan foto profil jika ada
-        const profilePhotoPreview = document.getElementById("profilePhotoPreview");
-        if (profilePhotoPreview) {
-            if (mentor.avatarPhoto) {
-                profilePhotoPreview.innerHTML = `<img src="${mentor.avatarPhoto}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
-            } else {
-                profilePhotoPreview.innerHTML = "";
-            }
+        const reviews = [];
+        snapshot.forEach(doc => reviews.push({ id: doc.id, ...doc.data() }));
+        
+        if (reviews.length === 0) {
+            reviewsList.innerHTML = `<p class="muted" style="font-size: 12px;">Belum ada ulasan.</p>`;
+            return;
         }
-    } else {
-        setValue("editPhone", user.phone || "");
+        
+        reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+        const avgRating = (totalRating / reviews.length).toFixed(1);
+        
+        reviewsList.innerHTML = `
+            <div style="margin-bottom: 10px; font-weight: bold;">
+                ⭐ ${avgRating} / 5 (${reviews.length} ulasan)
+            </div>
+            ${reviews.map(r => `
+                <div style="padding: 10px; background: #f5f5fa; border-radius: 8px; margin-bottom: 8px;">
+                    <strong>${r.userName}</strong> 
+                    <span style="color: #f59e0b;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                    <p style="margin: 5px 0 0; font-size: 12px;">${r.comment}</p>
+                </div>
+            `).join("")}
+        `;
+    } catch (error) {
+        console.error("Error loadReviews:", error);
+        reviewsList.innerHTML = `<p class="muted">Gagal memuat ulasan.</p>`;
     }
-
-    openModal("editProfileModal");
 }
 
-// Preview Foto Profil
-function previewProfilePhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-        showNotification("Ukuran foto profil maksimal 2MB.", "warning");
-        event.target.value = "";
+function openReviewModal(mentorId, mentorName) {
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification("Silakan login terlebih dahulu.", "warning");
         return;
     }
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const preview = document.getElementById("profilePhotoPreview");
-        if (preview) preview.innerHTML = `<img src="${e.target.result}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">`;
-    };
-    reader.readAsDataURL(file);
+    if (user.role === "mentor" || user.isMentor === true) {
+        showNotification("Pemateri tidak dapat memberi ulasan.", "warning");
+        return;
+    }
+    
+    document.getElementById("reviewMentorName").textContent = mentorName;
+    document.getElementById("reviewRatingValue").value = "0";
+    document.getElementById("reviewComment").value = "";
+    
+    document.querySelectorAll("#starRating span").forEach(star => {
+        star.style.color = "#ddd";
+    });
+    
+    document.getElementById("reviewModal").setAttribute("data-mentor-id", mentorId);
+    openModal("reviewModal");
 }
 
-async function saveMentorProfile() {
-    const user = getCurrentUser(); 
+function setRating(value) {
+    document.getElementById("reviewRatingValue").value = value;
+    const stars = document.querySelectorAll("#starRating span");
+    stars.forEach((star, index) => {
+        if (index < value) {
+            star.style.color = "#f59e0b";
+        } else {
+            star.style.color = "#ddd";
+        }
+    });
+}
+
+async function submitReview() {
+    const user = getCurrentUser();
     if (!user) return;
-
-    const role = document.getElementById("editRole").value.trim();
-    const location = document.getElementById("editLocation").value.trim();
-    const category = document.getElementById("editCategory").value;
-    const experience = Number(document.getElementById("editExperience").value) || 0;
-    const phone = document.getElementById("editPhone").value.trim();
-    const profilePhotoInput = document.getElementById("editPhotoProfile");
-    const profilePhotoFile = profilePhotoInput && profilePhotoInput.files[0];
-
-    if (!role) { showNotification("Bidang keahlian wajib diisi.", "warning"); return; }
-    if (!location) { showNotification("Domisili wajib diisi.", "warning"); return; }
-    if (!phone) { showNotification("Nomor WhatsApp wajib diisi.", "warning"); return; }
-
-    const cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length < 10 || cleanPhone.length > 15) {
-        showNotification("Format nomor WA tidak valid (10-15 digit).", "warning");
+    
+    const mentorId = document.getElementById("reviewModal").getAttribute("data-mentor-id");
+    const rating = Number(document.getElementById("reviewRatingValue").value);
+    const comment = document.getElementById("reviewComment").value.trim();
+    
+    if (rating < 1 || rating > 5) {
+        showNotification("Pilih rating 1-5 bintang.", "warning");
         return;
     }
-
-    user.phone = phone;
-    user.profileCompleted = true;
-    await saveCurrentUser(user); 
-
-    const users = await getUsers(); 
-    const userIndex = users.findIndex(u => u.id === user.id);
-    if (userIndex !== -1) {
-        users[userIndex].phone = phone;
-        users[userIndex].profileCompleted = true;
-        await saveUsers(users); 
+    
+    if (!comment) {
+        showNotification("Tulis komentar Anda.", "warning");
+        return;
     }
-
-    const mentors = await getSavedMentors(); 
-    const mentorIndex = mentors.findIndex(item => item.userId === user.id);
-    const existing = mentorIndex !== -1 ? mentors[mentorIndex] : {};
-
-    // Proses Foto Profil
-    let profilePhotoData = existing.avatarPhoto || null;
-    if (profilePhotoFile) {
-        profilePhotoData = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.readAsDataURL(profilePhotoFile);
+    
+    try {
+        await db.collection("reviews").add({
+            mentorId: mentorId,
+            mentorName: document.getElementById("reviewMentorName").textContent,
+            userId: user.id,
+            userName: user.name,
+            rating: rating,
+            comment: comment,
+            createdAt: new Date().toISOString()
         });
+        
+        await updateMentorRating(mentorId);
+        
+        showNotification("Ulasan berhasil dikirim!", "success");
+        closeModal("reviewModal");
+        
+        loadReviews(mentorId);
+    } catch (error) {
+        console.error("Error submitReview:", error);
+        showNotification("Gagal mengirim ulasan.", "error");
     }
-
-    const mentorData = {
-        id: existing.id || "mentor-" + Date.now(),
-        name: user.name,
-        initials: getInitials(user.name),
-        role: role,
-        location: location,
-        city: location,
-        category: category,
-        exp: experience,
-        rating: existing.rating || 5,
-        skills: existing.skills || [],
-        desc: existing.desc || "Pemateri terdaftar di BICARA.",
-        portfolio: existing.portfolio || "Deskripsi portofolio belum diisi.",
-        phone: phone,
-        photo: existing.photo || null,
-        cv: existing.cv || null,
-        avatarPhoto: profilePhotoData,
-        gallery: existing.gallery || [],
-        userId: user.id
-    };
-
-    if (mentorIndex !== -1) {
-        mentors[mentorIndex] = mentorData;
-    } else {
-        mentors.push(mentorData);
-    }
-
-    await saveMentors(mentors); 
-    showNotification("Profil berhasil disimpan!", "success");
-    
-    await updateStatistics(); 
-
-    setTimeout(async () => {
-        closeModal("editProfileModal");
-        const profileAlert = document.getElementById("profileAlert");
-        if (profileAlert) {
-            const updatedMentors = await getSavedMentors(); 
-            const updatedMentor = updatedMentors.find(m => m.userId === user.id);
-            const isComplete = isMentorProfileComplete(updatedMentor);
-            profileAlert.style.display = isComplete ? "none" : "block";
-        }
-        mentorsData = await getAllMentors(); 
-        current = [...mentorsData];
-    }, 1200);
 }
 
-async function openSkillsModal() {
-    const user = getCurrentUser(); 
-    if (!user) return;
-    const mentors = await getSavedMentors(); 
-    const mentor = mentors.find(m => m.userId === user.id);
-    const skillsInput = document.getElementById("skillsInput");
-
-    if (mentor && mentor.skills && mentor.skills.length > 0) {
-        skillsInput.value = mentor.skills.join(", ");
-    } else {
-        skillsInput.value = "";
-    }
-    renderSkillsPreview();
-    openModal("skillsModal");
-}
-
-function renderSkillsPreview() {
-    const input = document.getElementById("skillsInput");
-    const preview = document.getElementById("skillsPreview");
-    if (!input || !preview) return;
-
-    const skills = input.value.split(",").map(s => s.trim()).filter(s => s.length > 0);
-
-    if (skills.length === 0) {
-        preview.innerHTML = `<p class="muted" style="font-size: 11px;">Belum ada keahlian.</p>`;
-        return;
-    }
-
-    preview.innerHTML = `
-        <div class="detail-label" style="margin-top: 10px;">PREVIEW</div>
-        <div class="detail-list">
-            ${skills.map(s => `<span>${s}</span>`).join("")}
-        </div>
-    `;
-}
-
-document.addEventListener("input", function (e) {
-    if (e.target && e.target.id === "skillsInput") {
-        renderSkillsPreview();
-    }
-});
-
-async function saveSkills() {
-    const user = getCurrentUser(); 
-    if (!user) return;
-
-    const input = document.getElementById("skillsInput");
-    const skillsStr = input ? input.value.trim() : "";
-    if (!skillsStr) { showNotification("Minimal isi 1 keahlian.", "warning"); return; }
-
-    const skills = skillsStr.split(",").map(s => s.trim()).filter(s => s.length > 0);
-    const mentors = await getSavedMentors(); 
-    const mentorIndex = mentors.findIndex(m => m.userId === user.id);
-
-    if (mentorIndex === -1) {
-        mentors.push({
-            id: "mentor-" + Date.now(),
-            name: user.name,
-            initials: getInitials(user.name),
-            role: "Pemateri Baru",
-            location: "Indonesia",
-            city: "Indonesia",
-            category: "Umum",
-            exp: 1,
-            rating: 5,
-            skills: skills,
-            desc: "Profil pemateri terdaftar.",
-            portfolio: "Deskripsi portofolio belum diisi.",
-            phone: "",
-            userId: user.id
+async function updateMentorRating(mentorId) {
+    try {
+        const snapshot = await db.collection("reviews")
+            .where("mentorId", "==", mentorId)
+            .get();
+        
+        let total = 0;
+        let count = 0;
+        snapshot.forEach(doc => {
+            total += doc.data().rating;
+            count++;
         });
-    } else {
-        mentors[mentorIndex].skills = skills;
-    }
-
-    await saveMentors(mentors); 
-    showNotification("Kompetensi berhasil disimpan!", "success");
-    
-    await updateStatistics(); 
-
-    setTimeout(async () => {
-        closeModal("skillsModal");
-        const profileAlert = document.getElementById("profileAlert");
-        if (profileAlert) {
-            const updatedMentors = await getSavedMentors(); 
-            const updatedMentor = updatedMentors.find(m => m.userId === user.id);
-            const isComplete = isMentorProfileComplete(updatedMentor);
-            profileAlert.style.display = isComplete ? "none" : "block";
+        
+        if (count === 0) return;
+        
+        const avg = total / count;
+        
+        const mentors = await getSavedMentors();
+        const mentorIndex = mentors.findIndex(m => m.id === mentorId);
+        if (mentorIndex !== -1) {
+            mentors[mentorIndex].rating = parseFloat(avg.toFixed(1));
+            await saveMentors(mentors);
         }
-    }, 1000);
+    } catch (error) {
+        console.error("Error updateMentorRating:", error);
+    }
 }
-
-async function openPortfolioModal() {
-    const user = getCurrentUser(); 
-    if (!user) return;
-
-    const mentors = await getSavedMentors(); 
-    const mentor = mentors.find(m => m.userId === user.id);
-    const portfolioDesc = document.getElementById("portfolioDesc");
-    const photoPreview = document.getElementById("photoPreview");
-    const cvPreview = document.getElementById("cvPreview");
-    const galleryInputs = document.getElementById("galleryInputs");
-    const galleryPreview = document.getElementById("galleryPreview");
-
-    if (photoPreview) photoPreview.innerHTML = "";
-    if (cvPreview) cvPreview.innerHTML = "";
-    if (galleryInputs) galleryInputs.innerHTML = "";
-    if (galleryPreview) galleryPreview.innerHTML = "";
-
-    if (mentor) {
-        if (portfolioDesc) {
-            portfolioDesc.value = mentor.portfolio && mentor.portfolio !== "Deskripsi portofolio belum diisi." ? mentor.portfolio : "";
-        }
-        if (mentor.photo && photoPreview) {
-            photoPreview.innerHTML = `<img src="${mentor.photo}" alt="Foto Portofolio" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--line);">`;
-        }
-        if (mentor.cv && cvPreview) {
-            cvPreview.innerHTML = `<div style="padding: 10px; background: #f5f5fa; border-radius: 8px; font-size: 12px;">📄 CV sudah diupload. <a href="${mentor.cv}" download="CV-${mentor.name}.pdf" style="color: var(--primary); font-weight: 600;">Download</a></div>`;
-        }
-        // Tampilkan Galeri
-        if (mentor.gallery && mentor.gallery.length > 0 && galleryPreview) {
-            mentor.gallery.forEach(img => {
-                galleryPreview.innerHTML += `<img src="${img}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line);">`;
-            });
-        }
-    }
-    openModal("portfolioModal");
-}
-
-function previewPhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { // Naikkan ke 5MB
-        showNotification("Ukuran foto maksimal 5MB.", "warning");
-        event.target.value = "";
-        return;
-    }
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const preview = document.getElementById("photoPreview");
-        if (preview) preview.innerHTML = `<img src="${e.target.result}" alt="Preview Foto" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--line);">`;
-    };
-    reader.readAsDataURL(file);
-}
-
-function previewCV(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { // Naikkan ke 10MB
-        showNotification("Ukuran CV maksimal 10MB.", "warning");
-        event.target.value = "";
-        return;
-    }
-    const preview = document.getElementById("cvPreview");
-    if (preview) preview.innerHTML = `<div style="padding: 10px; background: #f5f5fa; border-radius: 8px; font-size: 12px;">📄 File siap diupload: <strong>${file.name}</strong></div>`;
-}
-
-// Fungsi Tambah Galeri
-function addGalleryItem() {
-    const container = document.getElementById("galleryInputs");
-    if (!container) return;
-    
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.className = "input";
-    input.onchange = previewGallery;
-    container.appendChild(input);
-}
-
-function previewGallery(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-        showNotification("Ukuran gambar maksimal 5MB.", "warning");
-        event.target.value = "";
-        return;
-    }
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const preview = document.getElementById("galleryPreview");
-        if (preview) {
-            preview.innerHTML += `<img src="${e.target.result}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line);">`;
-        }
-    };
-    reader.readAsDataURL(file);
-}
-
-async function savePortfolio() {
-    const user = getCurrentUser(); 
-    if (!user) return;
-
-    const photoInput = document.getElementById("portfolioPhoto");
-    const cvInput = document.getElementById("portfolioCV");
-    const descInput = document.getElementById("portfolioDesc");
-    const galleryInputs = document.querySelectorAll("#galleryInputs input[type='file']");
-
-    const photoFile = photoInput && photoInput.files[0];
-    const cvFile = cvInput && cvInput.files[0];
-    const desc = descInput ? descInput.value.trim() : "";
-
-    const mentors = await getSavedMentors(); 
-    const mentorIndex = mentors.findIndex(m => m.userId === user.id);
-
-    if (mentorIndex === -1) {
-        showNotification("Silakan isi profil terlebih dahulu (Edit Profil).", "warning");
-        return;
-    }
-
-    const mentor = mentors[mentorIndex];
-
-    // Proses Foto Utama
-    if (photoFile) {
-        if (photoFile.size > 5 * 1024 * 1024) { showNotification("Foto utama maks 5MB", "warning"); return; }
-        mentor.photo = await new Promise((res) => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(photoFile); });
-    }
-
-    // Proses CV (Batas 10MB)
-    if (cvFile) {
-        if (cvFile.size > 10 * 1024 * 1024) { showNotification("CV maks 10MB", "warning"); return; }
-        mentor.cv = await new Promise((res) => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(cvFile); });
-    }
-
-    if (desc) mentor.portfolio = desc;
-
-    // Proses Galeri
-    if (galleryInputs.length > 0) {
-        mentor.gallery = mentor.gallery || [];
-        for (const input of galleryInputs) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                if (file.size > 5 * 1024 * 1024) { showNotification("Sertifikat maks 5MB", "warning"); return; }
-                const base64 = await new Promise((res) => { const r = new FileReader(); r.onload = (e) => res(e.target.result); r.readAsDataURL(file); });
-                mentor.gallery.push(base64);
-            }
-        }
-    }
-
-    await saveMentors(mentors); 
-    showNotification("Portofolio, CV & Sertifikat berhasil disimpan!", "success");
-    
-    await updateStatistics(); 
-
-    setTimeout(async () => {
-        closeModal("portfolioModal");
-        const profileAlert = document.getElementById("profileAlert");
-        if (profileAlert) {
-            const updatedMentors = await getSavedMentors(); 
-            const updatedMentor = updatedMentors.find(m => m.userId === user.id);
-            const isComplete = isMentorProfileComplete(updatedMentor);
-            profileAlert.style.display = isComplete ? "none" : "block";
-        }
-    }, 1000);
-}
-
-document.addEventListener("DOMContentLoaded", async () => { 
-    document.body.style.overflow = "";
-
-    protectPages();
-    updateNavbar();
-    
-    await updateStatistics(); 
-
-    if (document.getElementById("mentorName")) {
-        const user = getCurrentUser(); 
-        if (user) {
-            document.getElementById("mentorName").textContent = user.name;
-            const mentors = await getSavedMentors(); 
-            const mentor = mentors.find(m => m.userId === user.id);
-            const profileAlert = document.getElementById("profileAlert");
-
-            if (profileAlert) {
-                const isComplete = isMentorProfileComplete(mentor);
-                profileAlert.style.display = isComplete ? "none" : "block";
-            }
-        }
-    }
-
-    if (document.getElementById("mentorGrid")) {
-        mentorsData = await getAllMentors(); 
-        current = [...mentorsData];
-        await renderMentors(); 
-    }
-});
 
 function isAuthenticated() {
     return !!getCurrentUser();
